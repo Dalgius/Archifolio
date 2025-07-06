@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -260,7 +259,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
                 <Textarea
                   placeholder="Descrivi la visione del progetto, i materiali e le sfide..."
                   rows={6}
-                  {...field}
+                  {..-field}
                 />
               </FormControl>
               <FormMessage />
