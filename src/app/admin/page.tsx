@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -85,12 +85,20 @@ export default function AdminPage() {
                 Nuovo Progetto
               </Button>
             </DialogTrigger>
-            <ProjectForm
-              onAddProject={handleAddProject}
-              onUpdateProject={handleUpdateProject}
-              projectToEdit={editingProject}
-              onClose={() => setProjectFormOpen(false)}
-            />
+            <DialogContent className="sm:max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="font-headline">{editingProject ? 'Modifica Progetto' : 'Aggiungi Nuovo Progetto'}</DialogTitle>
+                <DialogDescription>
+                  Compila i dettagli del tuo progetto di architettura.
+                </DialogDescription>
+              </DialogHeader>
+              <ProjectForm
+                onAddProject={handleAddProject}
+                onUpdateProject={handleUpdateProject}
+                projectToEdit={editingProject}
+                onClose={() => setProjectFormOpen(false)}
+              />
+            </DialogContent>
           </Dialog>
         </div>
       </header>
