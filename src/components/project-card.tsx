@@ -31,6 +31,7 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
     "Completato": "bg-green-500 hover:bg-green-600",
     "In Corso": "bg-blue-500 hover:bg-blue-600",
     "Concettuale": "bg-purple-500 hover:bg-purple-600",
+    "Da fare": "bg-yellow-500 hover:bg-yellow-600",
   };
 
   const isPublicView = !onEdit && !onDelete;
@@ -92,7 +93,7 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
             </div>
           </div>
           <p className="text-sm text-muted-foreground line-clamp-2 flex-grow mt-2">
-            {project.description}
+            {project.description || ''}
           </p>
         </CardContent>
       </Card>

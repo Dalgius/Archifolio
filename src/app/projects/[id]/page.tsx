@@ -68,12 +68,58 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             <span>&bull;</span>
             <span>{project.location}</span>
             <span>&bull;</span>
-            <span>Completato il: {format(parseISO(project.completionDate), 'd MMMM yyyy', { locale: it })}</span>
+            <span>Data: {format(parseISO(project.completionDate), 'd MMMM yyyy', { locale: it })}</span>
         </div>
         <h1 className="text-3xl md:text-5xl font-bold font-headline mb-6">{project.name}</h1>
-        <div className="prose prose-lg max-w-none text-foreground/80">
-          <p>{project.description}</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mb-8 text-sm border-t border-b py-8">
+          <div className="flex flex-col">
+            <span className="font-semibold text-muted-foreground uppercase tracking-wider">Committente</span>
+            <span className="text-foreground">{project.client}</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-semibold text-muted-foreground uppercase tracking-wider">Importo Lavori</span>
+            <span className="text-foreground">
+              {new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(project.amount)}
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-semibold text-muted-foreground uppercase tracking-wider">Classificazione</span>
+            <span className="text-foreground">{project.classification}</span>
+          </div>
+           <div className="flex flex-col">
+            <span className="font-semibold text-muted-foreground uppercase tracking-wider">Prestazione</span>
+            <span className="text-foreground">{project.service}</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-semibold text-muted-foreground uppercase tracking-wider">Categoria Opere</span>
+            <span className="text-foreground">{project.category}</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-semibold text-muted-foreground uppercase tracking-wider">Tipologia</span>
+            <span className="text-foreground">{project.typology}</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-semibold text-muted-foreground uppercase tracking-wider">Intervento</span>
+            <span className="text-foreground">{project.intervention}</span>
+          </div>
         </div>
+
+        {project.works && project.works.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold font-headline mb-4">Lavori Principali</h2>
+            <ul className="list-disc list-inside space-y-2 text-foreground/80">
+              {project.works.map((work, index) => <li key={index}>{work}</li>)}
+            </ul>
+          </div>
+        )}
+
+        {project.description && (
+          <div className="prose prose-lg max-w-none text-foreground/80">
+             <h2 className="text-2xl font-bold font-headline mb-4">Note / Descrizione</h2>
+            <p>{project.description}</p>
+          </div>
+        )}
       </article>
     </div>
   );

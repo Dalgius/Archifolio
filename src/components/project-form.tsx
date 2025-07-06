@@ -41,11 +41,22 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 
 const projectSchema = z.object({
-  name: z.string().min(1, "Il nome del progetto è obbligatorio"),
-  status: z.enum(["Completato", "In Corso", "Concettuale"]),
+  name: z.string().min(1, "Il titolo è obbligatorio"),
+  status: z.enum(["Completato", "In Corso", "Concettuale", "Da fare"]),
   location: z.string().min(1, "La località è obbligatoria"),
-  completionDate: z.date({ required_error: "La data di completamento è obbligatoria" }),
-  description: z.string().min(10, "La descrizione deve contenere almeno 10 caratteri"),
+  completionDate: z.date({ required_error: "La data è obbligatoria" }),
+  classification: z.string().min(1, "La classificazione è obbligatoria"),
+  category: z.string().min(1, "La categoria è obbligatoria"),
+  typology: z.string().min(1, "La tipologia è obbligatoria"),
+  intervention: z.string().min(1, "L'intervento è obbligatorio"),
+  client: z.string().min(1, "Il committente è obbligatorio"),
+  service: z.string().min(1, "La prestazione è obbligatoria"),
+  amount: z.preprocess(
+    (a) => parseFloat(String(a).replace(/[^0-9.-]+/g, "")),
+    z.number({ invalid_type_error: "L'importo deve essere un numero" }).min(0, "L'importo non può essere negativo")
+  ),
+  works: z.string().optional(),
+  description: z.string().optional(),
   image: z.any().refine((files) => files?.[0] || typeof files === 'string', "L'immagine è obbligatoria."),
   isPublic: z.boolean().default(true),
 });
@@ -66,18 +77,30 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
     defaultValues: projectToEdit ? {
-        ...projectToEdit,
-        completionDate: new Date(projectToEdit.completionDate),
-        image: projectToEdit.image,
+      ...projectToEdit,
+      completionDate: new Date(projectToEdit.completionDate),
+      image: projectToEdit.image,
+      works: projectToEdit.works.join('\\n'),
+      description: projectToEdit.description || '',
+      amount: projectToEdit.amount || 0,
     } : {
       name: "",
       status: "In Corso",
       location: "",
+      completionDate: new Date(),
+      classification: "",
+      category: "",
+      typology: "",
+      intervention: "",
+      client: "",
+      service: "",
+      amount: 0,
+      works: "",
       description: "",
       isPublic: true,
     },
   });
-  
+
   const watchedImage = form.watch("image");
 
   React.useEffect(() => {
@@ -91,65 +114,57 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
         reader.readAsDataURL(file);
       }
     } else if (typeof watchedImage === 'string') {
-        setImagePreview(watchedImage);
+      setImagePreview(watchedImage);
     }
   }, [watchedImage]);
 
   const onSubmit = (data: ProjectFormValues) => {
     const projectData: Project = {
-        ...data,
-        id: projectToEdit?.id || new Date().toISOString(),
-        completionDate: format(data.completionDate, 'yyyy-MM-dd'),
-        image: imagePreview!,
+      ...data,
+      id: projectToEdit?.id || new Date().toISOString(),
+      completionDate: format(data.completionDate, 'yyyy-MM-dd'),
+      image: imagePreview!,
+      works: data.works ? data.works.split('\\n').filter(line => line.trim() !== '') : [],
     };
-    
+
     if (projectToEdit) {
-        onUpdateProject(projectData);
-        toast({ title: "Progetto aggiornato con successo!" });
+      onUpdateProject(projectData);
+      toast({ title: "Progetto aggiornato con successo!" });
     } else {
-        onAddProject(projectData);
-        toast({ title: "Progetto aggiunto con successo!" });
+      onAddProject(projectData);
+      toast({ title: "Progetto aggiunto con successo!" });
     }
     onClose();
   };
-  
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-4">
-            <FormField
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+          <div className="space-y-4 col-span-1">
+             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome Progetto</FormLabel>
+                  <FormLabel>Titolo</FormLabel>
                   <FormControl>
-                    <Input placeholder="es. Villa Moderna sul Lago" {...field} />
+                    <Input placeholder="es. Intervento Sicurezza Sismica" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            <FormField
+             <FormField
               control={form.control}
-              name="status"
+              name="client"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Stato</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleziona lo stato del progetto" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Completato">Completato</SelectItem>
-                      <SelectItem value="In Corso">In Corso</SelectItem>
-                      <SelectItem value="Concettuale">Concettuale</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Committente</FormLabel>
+                  <FormControl>
+                    <Input placeholder="es. Diocesi di Isernia" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -161,18 +176,18 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
                 <FormItem>
                   <FormLabel>Località</FormLabel>
                   <FormControl>
-                    <Input placeholder="es. Lago di Como, IT" {...field} />
+                    <Input placeholder="es. Castelnuovo (IS)" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
+             <FormField
               control={form.control}
               name="completionDate"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Data di Completamento</FormLabel>
+                  <FormLabel>Data</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -197,7 +212,6 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
                         mode="single"
                         selected={field.value}
                         onSelect={field.onChange}
-                        disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                         initialFocus
                         locale={it}
                       />
@@ -208,57 +222,166 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
               )}
             />
           </div>
-          <div className="space-y-2">
+
+          <div className="space-y-4 col-span-1">
+            <FormField
+              control={form.control}
+              name="classification"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Classificazione</FormLabel>
+                  <FormControl>
+                    <Input placeholder="es. Enti pubblici" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Categoria Opere</FormLabel>
+                  <FormControl>
+                    <Input placeholder="es. E.22" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="typology"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tipologia</FormLabel>
+                  <FormControl>
+                    <Input placeholder="es. Chiesa" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="intervention"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Intervento</FormLabel>
+                  <FormControl>
+                    <Input placeholder="es. Ristrutturazione" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          <div className="space-y-4 col-span-1">
+             <FormField
+              control={form.control}
+              name="service"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Prestazione</FormLabel>
+                  <FormControl>
+                    <Input placeholder="es. Progetto Esecutivo e DL" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="amount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Importo Lavori (€)</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="es. 530000" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Avanzamento</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleziona lo stato" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Da fare">Da fare</SelectItem>
+                      <SelectItem value="In Corso">In Corso</SelectItem>
+                      <SelectItem value="Completato">Completato</SelectItem>
+                      <SelectItem value="Concettuale">Concettuale</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="space-y-2">
               <FormLabel>Immagine del Progetto</FormLabel>
               <FormField
-                  control={form.control}
-                  name="image"
-                  render={({ field }) => (
+                control={form.control}
+                name="image"
+                render={({ field }) => (
                   <FormItem>
-                      <FormControl>
-                      <div className="relative w-full h-48 border-2 border-dashed rounded-md flex items-center justify-center text-muted-foreground hover:border-primary transition-colors">
-                          <Input
+                    <FormControl>
+                      <div className="relative w-full h-24 border-2 border-dashed rounded-md flex items-center justify-center text-muted-foreground hover:border-primary transition-colors">
+                        <Input
                           type="file"
                           accept="image/*"
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                           onChange={(e) => field.onChange(e.target.files)}
-                          />
-                          {imagePreview ? (
+                        />
+                        {imagePreview ? (
                           <>
-                              <Image src={imagePreview} alt="Project preview" fill className="object-cover rounded-md" />
-                              <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-6 w-6 z-10" onClick={() => {
-                                  setImagePreview(null);
-                                  form.setValue("image", null);
-                              }}>
-                                  <X className="h-4 w-4"/>
-                              </Button>
+                            <Image src={imagePreview} alt="Anteprima" fill className="object-cover rounded-md" />
+                            <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 z-10" onClick={() => {
+                              setImagePreview(null);
+                              form.setValue("image", null);
+                            }}>
+                              <X className="h-4 w-4" />
+                            </Button>
                           </>
-                          ) : (
-                          <div className="text-center">
-                              <UploadCloud className="mx-auto h-8 w-8" />
-                              <p>Clicca per caricare o trascina e rilascia</p>
+                        ) : (
+                          <div className="text-center text-xs">
+                            <UploadCloud className="mx-auto h-6 w-6" />
+                            <p>Carica immagine</p>
                           </div>
-                          )}
+                        )}
                       </div>
-                      </FormControl>
-                      <FormMessage />
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
-                  )}
+                )}
               />
+            </div>
           </div>
-
         </div>
 
         <FormField
           control={form.control}
-          name="description"
+          name="works"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Descrizione</FormLabel>
+              <FormLabel>Lavori</FormLabel>
+              <FormDescription>
+                Elenca i lavori principali, uno per riga.
+              </FormDescription>
               <FormControl>
                 <Textarea
-                  placeholder="Descrivi la visione del progetto, i materiali e le sfide..."
-                  rows={6}
+                  placeholder="es. Rifacimento copertura&#x0a;Consolidamento strutturale"
+                  rows={4}
                   {...field}
                 />
               </FormControl>
@@ -266,7 +389,24 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
             </FormItem>
           )}
         />
-         <FormField
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Note / Descrizione</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Aggiungi qui eventuali note o una descrizione dettagliata del progetto..."
+                  rows={4}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
           control={form.control}
           name="isPublic"
           render={({ field }) => (
@@ -286,7 +426,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
             </FormItem>
           )}
         />
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4">
           <Button type="button" variant="outline" onClick={onClose}>
             Annulla
           </Button>

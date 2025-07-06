@@ -50,6 +50,7 @@ export default function AdminPage() {
     "Completato",
     "In Corso",
     "Concettuale",
+    "Da fare",
   ];
 
   const filteredProjects = (status: ProjectStatus | "All") => {
@@ -113,7 +114,7 @@ export default function AdminPage() {
                 Nuovo Progetto
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="sm:max-w-4xl">
               <DialogHeader>
                 <DialogTitle className="font-headline">{editingProject ? 'Modifica Progetto' : 'Aggiungi Nuovo Progetto'}</DialogTitle>
                 <DialogDescription>
