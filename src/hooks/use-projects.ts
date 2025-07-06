@@ -17,7 +17,29 @@ export function useProjects() {
     try {
       const storedItem = window.localStorage.getItem(PROJECTS_STORAGE_KEY);
       if (storedItem) {
-        setProjects(JSON.parse(storedItem));
+        const storedProjects = JSON.parse(storedItem);
+        // Ensure all projects have the new fields to prevent crashes from old data.
+        const migratedProjects = storedProjects.map((p: Partial<Project>): Project => ({
+          id: p.id!,
+          name: p.name!,
+          image: p.image!,
+          location: p.location!,
+          completionDate: p.completionDate!,
+          status: p.status!,
+          isPublic: p.isPublic ?? false,
+          works: p.works || [],
+          amount: p.amount ?? 0,
+          client: p.client || '',
+          classification: p.classification || '',
+          category: p.category || '',
+          typology: p.typology || '',
+          intervention: p.intervention || '',
+          service: p.service || '',
+          description: p.description || '',
+        }));
+        setProjects(migratedProjects);
+        // Re-save the migrated data to prevent running migration every time
+        window.localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(migratedProjects));
       } else {
         // If nothing in storage, use initial data and set it
         setProjects(initialProjects);
