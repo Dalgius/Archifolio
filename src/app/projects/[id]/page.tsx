@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { notFound } from 'next/navigation';
 import { format, parseISO } from 'date-fns';
+import { it } from 'date-fns/locale';
 
 export async function generateStaticParams() {
   return projects.map((project) => ({
@@ -26,7 +27,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         <Link href="/" >
           <Button variant="outline" className="inline-flex items-center gap-2">
             <ArrowLeft />
-            <span>Back to Portfolio</span>
+            <span>Torna al Portfolio</span>
           </Button>
         </Link>
       </div>
@@ -44,7 +45,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             <span>&bull;</span>
             <span>{project.location}</span>
             <span>&bull;</span>
-            <span>Completed: {format(parseISO(project.completionDate), 'LLLL d, yyyy')}</span>
+            <span>Completato il: {format(parseISO(project.completionDate), 'd MMMM yyyy', { locale: it })}</span>
         </div>
         <h1 className="text-3xl md:text-5xl font-bold font-headline mb-6">{project.name}</h1>
         <div className="prose prose-lg max-w-none text-foreground/80">

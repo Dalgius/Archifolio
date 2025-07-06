@@ -45,9 +45,9 @@ export default function AdminPage() {
   };
 
   const projectStatuses: ProjectStatus[] = [
-    "Completed",
-    "In Progress",
-    "Conceptual",
+    "Completato",
+    "In Corso",
+    "Concettuale",
   ];
 
   const filteredProjects = (status: ProjectStatus | "All") => {
@@ -58,7 +58,7 @@ export default function AdminPage() {
   return (
     <div className="flex flex-col h-full">
       <header className="flex items-center justify-between p-4 border-b">
-        <h2 className="text-2xl font-bold font-headline">Manage Portfolio</h2>
+        <h2 className="text-2xl font-bold font-headline">Gestisci Portfolio</h2>
         <div className="flex gap-2">
           <Dialog open={pdfExportOpen} onOpenChange={setPdfExportOpen}>
             <Tooltip>
@@ -66,11 +66,11 @@ export default function AdminPage() {
                 <DialogTrigger asChild>
                   <Button variant="outline" size="icon">
                     <Download className="w-4 h-4" />
-                    <span className="sr-only">Export PDF</span>
+                    <span className="sr-only">Esporta PDF</span>
                   </Button>
                 </DialogTrigger>
               </TooltipTrigger>
-              <TooltipContent>Export to PDF</TooltipContent>
+              <TooltipContent>Esporta in PDF</TooltipContent>
             </Tooltip>
             <PdfExportDialog projects={projects} />
           </Dialog>
@@ -82,7 +82,7 @@ export default function AdminPage() {
             <DialogTrigger asChild>
               <Button>
                 <Plus className="w-4 h-4 mr-2" />
-                New Project
+                Nuovo Progetto
               </Button>
             </DialogTrigger>
             <ProjectForm
@@ -98,7 +98,7 @@ export default function AdminPage() {
       <main className="flex-1 p-4 overflow-y-auto md:p-6">
         <Tabs defaultValue="All" className="w-full">
           <TabsList>
-            <TabsTrigger value="All">All</TabsTrigger>
+            <TabsTrigger value="All">Tutti</TabsTrigger>
             {projectStatuses.map((status) => (
               <TabsTrigger key={status} value={status}>
                 {status}
@@ -126,9 +126,9 @@ function ProjectGrid({ projects, onEdit, onDelete }: { projects: Project[], onEd
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4 text-center border-2 border-dashed rounded-lg">
         <FileText className="w-12 h-12 text-muted-foreground" />
-        <h3 className="text-xl font-semibold font-headline">No Projects Found</h3>
+        <h3 className="text-xl font-semibold font-headline">Nessun Progetto Trovato</h3>
         <p className="text-muted-foreground">
-          Get started by adding a new project.
+          Inizia aggiungendo un nuovo progetto.
         </p>
       </div>
     );

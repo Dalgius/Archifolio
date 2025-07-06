@@ -26,9 +26,9 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
   const statusColors: { [key in Project["status"]]: string } = {
-    Completed: "bg-green-500 hover:bg-green-600",
-    "In Progress": "bg-blue-500 hover:bg-blue-600",
-    Conceptual: "bg-purple-500 hover:bg-purple-600",
+    "Completato": "bg-green-500 hover:bg-green-600",
+    "In Corso": "bg-blue-500 hover:bg-blue-600",
+    "Concettuale": "bg-purple-500 hover:bg-purple-600",
   };
 
   const isPublic = !onEdit && !onDelete;
@@ -55,11 +55,11 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => onEdit?.(project)}>
                   <Edit className="mr-2 h-4 w-4" />
-                  <span>Edit</span>
+                  <span>Modifica</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onDelete?.(project.id)} className="text-destructive focus:text-destructive">
                   <Trash2 className="mr-2 h-4 w-4" />
-                  <span>Delete</span>
+                  <span>Elimina</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

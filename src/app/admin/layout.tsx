@@ -24,7 +24,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <SidebarMenuButton asChild isActive={pathname.startsWith('/admin')}>
                 <Link href="/admin">
                   <LayoutGrid />
-                  <span>Projects</span>
+                  <span>Progetti</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -32,7 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <SidebarMenuButton asChild>
                 <Link href="/" target="_blank">
                   <Globe />
-                  <span>View Site</span>
+                  <span>Visualizza Sito</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

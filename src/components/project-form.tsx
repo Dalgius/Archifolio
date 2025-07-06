@@ -10,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { format } from "date-fns";
+import { it } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -48,12 +49,12 @@ import type { Project } from "@/types";
 import Image from "next/image";
 
 const projectSchema = z.object({
-  name: z.string().min(1, "Project name is required"),
-  status: z.enum(["Completed", "In Progress", "Conceptual"]),
-  location: z.string().min(1, "Location is required"),
-  completionDate: z.date({ required_error: "Completion date is required" }),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  image: z.any().refine((files) => files?.[0] || typeof files === 'string', "Image is required."),
+  name: z.string().min(1, "Il nome del progetto è obbligatorio"),
+  status: z.enum(["Completato", "In Corso", "Concettuale"]),
+  location: z.string().min(1, "La località è obbligatoria"),
+  completionDate: z.date({ required_error: "La data di completamento è obbligatoria" }),
+  description: z.string().min(10, "La descrizione deve contenere almeno 10 caratteri"),
+  image: z.any().refine((files) => files?.[0] || typeof files === 'string', "L'immagine è obbligatoria."),
 });
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
@@ -77,7 +78,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
         image: projectToEdit.image,
     } : {
       name: "",
-      status: "In Progress",
+      status: "In Corso",
       location: "",
       description: "",
     },
@@ -110,19 +111,19 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
     
     if (projectToEdit) {
         onUpdateProject(projectData);
-        toast({ title: "Project updated successfully!" });
+        toast({ title: "Progetto aggiornato con successo!" });
     } else {
         onAddProject(projectData);
-        toast({ title: "Project added successfully!" });
+        toast({ title: "Progetto aggiunto con successo!" });
     }
   };
   
   return (
     <DialogContent className="sm:max-w-2xl">
       <DialogHeader>
-        <DialogTitle className="font-headline">{projectToEdit ? 'Edit Project' : 'Add New Project'}</DialogTitle>
+        <DialogTitle className="font-headline">{projectToEdit ? 'Modifica Progetto' : 'Aggiungi Nuovo Progetto'}</DialogTitle>
         <DialogDescription>
-          Fill in the details of your architectural project.
+          Compila i dettagli del tuo progetto di architettura.
         </DialogDescription>
       </DialogHeader>
       <Form {...form}>
@@ -134,9 +135,9 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Project Name</FormLabel>
+                    <FormLabel>Nome Progetto</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Modern Lake House" {...field} />
+                      <Input placeholder="es. Villa Moderna sul Lago" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -148,17 +149,17 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
+                    <FormLabel>Stato</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select project status" />
+                          <SelectValue placeholder="Seleziona lo stato del progetto" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Completed">Completed</SelectItem>
-                        <SelectItem value="In Progress">In Progress</SelectItem>
-                        <SelectItem value="Conceptual">Conceptual</SelectItem>
+                        <SelectItem value="Completato">Completato</SelectItem>
+                        <SelectItem value="In Corso">In Corso</SelectItem>
+                        <SelectItem value="Concettuale">Concettuale</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -170,9 +171,9 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
                 name="location"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Location</FormLabel>
+                    <FormLabel>Località</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Lake Tahoe, CA" {...field} />
+                      <Input placeholder="es. Lago di Como, IT" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -183,7 +184,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
                 name="completionDate"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Completion Date</FormLabel>
+                    <FormLabel>Data di Completamento</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -195,9 +196,9 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
                             )}
                           >
                             {field.value ? (
-                              format(field.value, "PPP")
+                              format(field.value, "PPP", { locale: it })
                             ) : (
-                              <span>Pick a date</span>
+                              <span>Scegli una data</span>
                             )}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
@@ -210,6 +211,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
                           onSelect={field.onChange}
                           disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                           initialFocus
+                          locale={it}
                         />
                       </PopoverContent>
                     </Popover>
@@ -219,7 +221,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
               />
             </div>
             <div className="space-y-2">
-                <FormLabel>Project Image</FormLabel>
+                <FormLabel>Immagine del Progetto</FormLabel>
                 <FormField
                     control={form.control}
                     name="image"
@@ -246,7 +248,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
                             ) : (
                             <div className="text-center">
                                 <UploadCloud className="mx-auto h-8 w-8" />
-                                <p>Click to upload or drag & drop</p>
+                                <p>Clicca per caricare o trascina e rilascia</p>
                             </div>
                             )}
                         </div>
@@ -264,10 +266,10 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Description</FormLabel>
+                <FormLabel>Descrizione</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Describe the project's vision, materials, and challenges..."
+                    placeholder="Descrivi la visione del progetto, i materiali e le sfide..."
                     rows={6}
                     {...field}
                   />
@@ -278,9 +280,9 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
           />
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              Annulla
             </Button>
-            <Button type="submit">{projectToEdit ? 'Update Project' : 'Add Project'}</Button>
+            <Button type="submit">{projectToEdit ? 'Aggiorna Progetto' : 'Aggiungi Progetto'}</Button>
           </DialogFooter>
         </form>
       </Form>

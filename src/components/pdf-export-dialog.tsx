@@ -43,14 +43,14 @@ export function PdfExportDialog({ projects }: PdfExportDialogProps) {
   return (
     <DialogContent className="sm:max-w-md">
       <DialogHeader>
-        <DialogTitle className="font-headline">Export Portfolio to PDF</DialogTitle>
+        <DialogTitle className="font-headline">Esporta Portfolio in PDF</DialogTitle>
         <DialogDescription>
-          Select projects to include in your PDF export.
+          Seleziona i progetti da includere nell'esportazione PDF.
         </DialogDescription>
       </DialogHeader>
 
       <div className="flex flex-col gap-4">
-        <h3 className="font-semibold">Select Projects</h3>
+        <h3 className="font-semibold">Seleziona Progetti</h3>
         <div className="flex items-center space-x-2">
           <Checkbox
             id="select-all"
@@ -58,7 +58,7 @@ export function PdfExportDialog({ projects }: PdfExportDialogProps) {
             checked={selectedProjects.length > 0 && selectedProjects.length === projects.length}
             />
           <label htmlFor="select-all" className="text-sm font-medium leading-none">
-            Select All
+            Seleziona Tutto
           </label>
         </div>
         <ScrollArea className="h-48 p-4 border rounded-md">
@@ -79,8 +79,8 @@ export function PdfExportDialog({ projects }: PdfExportDialogProps) {
         </ScrollArea>
       </div>
        <DialogFooter>
-        <Button variant="outline" onClick={handleReset}>Reset</Button>
-        <Button disabled={selectedProjects.length === 0}>Download PDF (coming soon)</Button>
+        <Button variant="outline" onClick={handleReset}>Resetta</Button>
+        <Button disabled={selectedProjects.length === 0}>Scarica PDF (presto disponibile)</Button>
       </DialogFooter>
     </DialogContent>
   );

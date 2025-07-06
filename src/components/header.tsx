@@ -12,10 +12,10 @@ export function Header() {
                 </Link>
                 <nav className="flex gap-2 items-center">
                     <Button variant="ghost" asChild>
-                        <Link href="/#projects">Projects</Link>
+                        <Link href="/#projects">Progetti</Link>
                     </Button>
                     <Button asChild>
-                        <Link href="/admin">Admin Login</Link>
+                        <Link href="/admin">Accesso Admin</Link>
                     </Button>
                 </nav>
             </div>
