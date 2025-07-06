@@ -1,18 +1,27 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import {
-  CalendarIcon,
-  UploadCloud,
-  X,
-} from "lucide-react";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
+import { CalendarIcon, UploadCloud, X } from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import type { Project } from "@/types";
+import { useToast } from "@/hooks/use-toast";
 
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -23,7 +32,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -31,24 +44,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
-import type { Project } from "@/types";
-import Image from "next/image";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 
 const projectSchema = z.object({
   name: z.string().min(1, "Il nome del progetto è obbligatorio"),
@@ -242,7 +239,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
                             />
                             {imagePreview ? (
                             <>
-                                <Image src={imagePreview} alt="Project preview" layout="fill" objectFit="cover" className="rounded-md" />
+                                <Image src={imagePreview} alt="Project preview" fill className="object-cover rounded-md" />
                                 <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-6 w-6 z-10" onClick={() => {
                                     setImagePreview(null);
                                     form.setValue("image", null);
