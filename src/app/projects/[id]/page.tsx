@@ -9,7 +9,7 @@ import { format, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
 
 export async function generateStaticParams() {
-  return projects.map((project) => ({
+  return projects.filter(p => p.isPublic).map((project) => ({
     id: project.id,
   }));
 }
@@ -17,7 +17,7 @@ export async function generateStaticParams() {
 export default function ProjectPage({ params }: { params: { id: string } }) {
   const project = projects.find((p) => p.id === params.id);
 
-  if (!project) {
+  if (!project || !project.isPublic) {
     notFound();
   }
 

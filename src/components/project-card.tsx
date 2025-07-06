@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Edit, MoreVertical, Trash2 } from "lucide-react";
+import { Edit, MoreVertical, Trash2, Eye, EyeOff } from "lucide-react";
 import type { Project } from "@/types";
 import {
   Card,
@@ -17,6 +17,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "./ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+
 
 interface ProjectCardProps {
   project: Project;
@@ -31,56 +33,78 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
     "Concettuale": "bg-purple-500 hover:bg-purple-600",
   };
 
-  const isPublic = !onEdit && !onDelete;
+  const isPublicView = !onEdit && !onDelete;
+
+  const cardContent = (
+      <Card className="overflow-hidden transition-all duration-300 ease-in-out h-full flex flex-col group-hover:shadow-xl">
+        <CardHeader className="p-0 relative">
+          <Image
+            src={project.image}
+            alt={project.name}
+            width={600}
+            height={400}
+            className="object-cover w-full h-48 transition-transform duration-300 ease-in-out group-hover:scale-105"
+            data-ai-hint="architecture design"
+          />
+          {!isPublicView && (
+            <div className="absolute top-2 right-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="secondary" size="icon" className="h-8 w-8 bg-black/50 hover:bg-black/75 text-white">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onEdit?.(project)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    <span>Modifica</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onDelete?.(project.id)} className="text-destructive focus:text-destructive">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    <span>Elimina</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+        </CardHeader>
+        <CardContent className="p-4 flex-grow flex flex-col">
+          <div className="flex items-start justify-between">
+            <CardTitle className="mb-2 text-lg font-bold leading-tight font-headline pr-2">
+              {project.name}
+            </CardTitle>
+            <div className="flex items-center gap-2 flex-shrink-0">
+                {!isPublicView && (
+                    <Tooltip>
+                        <TooltipTrigger>
+                            {project.isPublic ? <Eye className="h-4 w-4 text-green-500" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>{project.isPublic ? "Visibile al pubblico" : "Nascosto al pubblico"}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                )}
+                <Badge
+                    className={`text-white text-xs ${statusColors[project.status]}`}
+                >
+                    {project.status}
+                </Badge>
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground line-clamp-2 flex-grow mt-2">
+            {project.description}
+          </p>
+        </CardContent>
+      </Card>
+  );
+  
+  if (isPublicView) {
+    return cardContent;
+  }
 
   return (
-    <Card className="overflow-hidden transition-all duration-300 ease-in-out h-full flex flex-col group-hover:shadow-xl">
-      <CardHeader className="p-0 relative">
-        <Image
-          src={project.image}
-          alt={project.name}
-          width={600}
-          height={400}
-          className="object-cover w-full h-48 transition-transform duration-300 ease-in-out group-hover:scale-105"
-          data-ai-hint="architecture design"
-        />
-        {!isPublic && (
-          <div className="absolute top-2 right-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="secondary" size="icon" className="h-8 w-8 bg-black/50 hover:bg-black/75 text-white">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEdit?.(project)}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  <span>Modifica</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onDelete?.(project.id)} className="text-destructive focus:text-destructive">
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  <span>Elimina</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )}
-      </CardHeader>
-      <CardContent className="p-4 flex-grow flex flex-col">
-        <div className="flex items-start justify-between">
-          <CardTitle className="mb-2 text-lg font-bold leading-tight font-headline">
-            {project.name}
-          </CardTitle>
-          <Badge
-            className={`text-white text-xs ${statusColors[project.status]}`}
-          >
-            {project.status}
-          </Badge>
-        </div>
-        <p className="text-sm text-muted-foreground line-clamp-2 flex-grow">
-          {project.description}
-        </p>
-      </CardContent>
-    </Card>
-  );
+    <TooltipProvider>
+      {cardContent}
+    </TooltipProvider>
+  )
 }

@@ -10,6 +10,7 @@ export const projects: Project[] = [
     status: "Completato",
     location: "Malibu, California",
     completionDate: "2023-05-15",
+    isPublic: true,
   },
   {
     id: "2",
@@ -20,6 +21,7 @@ export const projects: Project[] = [
     status: "In Corso",
     location: "New York, New York",
     completionDate: "2025-12-01",
+    isPublic: true,
   },
   {
     id: "3",
@@ -30,6 +32,7 @@ export const projects: Project[] = [
     status: "Completato",
     location: "Asheville, North Carolina",
     completionDate: "2022-09-20",
+    isPublic: true,
   },
   {
     id: "4",
@@ -40,6 +43,7 @@ export const projects: Project[] = [
     status: "Concettuale",
     location: "Oceano Pacifico",
     completionDate: "2040-01-01",
+    isPublic: false,
   },
     {
     id: "5",
@@ -50,6 +54,7 @@ export const projects: Project[] = [
     status: "Completato",
     location: "Kyoto, Japan",
     completionDate: "2024-02-10",
+    isPublic: true,
   },
   {
     id: "6",
@@ -60,5 +65,6 @@ export const projects: Project[] = [
     status: "In Corso",
     location: "Manchester, UK",
     completionDate: "2025-08-30",
+    isPublic: false,
   },
 ];

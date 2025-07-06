@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -40,13 +41,13 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import type { Project } from "@/types";
 import Image from "next/image";
+import { Switch } from "@/components/ui/switch";
 
 const projectSchema = z.object({
   name: z.string().min(1, "Il nome del progetto è obbligatorio"),
@@ -55,6 +56,7 @@ const projectSchema = z.object({
   completionDate: z.date({ required_error: "La data di completamento è obbligatoria" }),
   description: z.string().min(10, "La descrizione deve contenere almeno 10 caratteri"),
   image: z.any().refine((files) => files?.[0] || typeof files === 'string', "L'immagine è obbligatoria."),
+  isPublic: z.boolean().default(true),
 });
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
@@ -81,6 +83,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
       status: "In Corso",
       location: "",
       description: "",
+      isPublic: true,
     },
   });
   
@@ -102,7 +105,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
   }, [watchedImage]);
 
   const onSubmit = (data: ProjectFormValues) => {
-    const projectData = {
+    const projectData: Project = {
         ...data,
         id: projectToEdit?.id || new Date().toISOString(),
         completionDate: format(data.completionDate, 'yyyy-MM-dd'),
@@ -116,6 +119,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
         onAddProject(projectData);
         toast({ title: "Progetto aggiunto con successo!" });
     }
+    onClose();
   };
   
   return (
@@ -154,7 +158,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Seleziona lo stato del progetto" />
-                        </SelectTrigger>
+                        </Trigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="Completato">Completato</SelectItem>
@@ -275,6 +279,26 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
                   />
                 </FormControl>
                 <FormMessage />
+              </FormItem>
+            )}
+          />
+           <FormField
+            control={form.control}
+            name="isPublic"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                <div className="space-y-0.5">
+                  <FormLabel>Visibilità Pubblica</FormLabel>
+                  <FormDescription>
+                    Rendi questo progetto visibile sul tuo portfolio pubblico.
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
               </FormItem>
             )}
           />

@@ -8,4 +8,5 @@ export interface Project {
   status: ProjectStatus;
   location: string;
   completionDate: string; // "YYYY-MM-DD"
+  isPublic: boolean;
 }
