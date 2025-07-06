@@ -19,12 +19,13 @@ export function useProjects() {
       if (storedItem) {
         const storedProjects = JSON.parse(storedItem);
         // Ensure all projects have the new fields to prevent crashes from old data.
-        const migratedProjects = storedProjects.map((p: Partial<Project>): Project => ({
+        const migratedProjects = storedProjects.map((p: any): Project => ({
           id: p.id!,
           name: p.name!,
           image: p.image!,
           location: p.location!,
-          completionDate: p.completionDate!,
+          startDate: p.startDate || p.completionDate || '2023-01-01',
+          endDate: p.endDate || p.completionDate || '2023-01-01',
           status: p.status!,
           isPublic: p.isPublic ?? false,
           works: p.works || [],
@@ -37,6 +38,9 @@ export function useProjects() {
           service: p.service || '',
           description: p.description || '',
         }));
+         // Remove the old completionDate property if it exists
+        migratedProjects.forEach(p => delete (p as any).completionDate);
+
         setProjects(migratedProjects);
         // Re-save the migrated data to prevent running migration every time
         window.localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(migratedProjects));

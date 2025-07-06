@@ -5,7 +5,8 @@ export interface Project {
   name: string; // Titolo
   image: string; // Immagine
   location: string; // Località
-  completionDate: string; // Data, "YYYY-MM-DD"
+  startDate: string; // Data Inizio, "YYYY-MM-DD"
+  endDate: string; // Data Fine, "YYYY-MM-DD"
   classification: string; // Classificazione
   category: string; // Categorie delle opere
   typology: string; // Tipologia

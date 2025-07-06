@@ -68,7 +68,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             <span>&bull;</span>
             <span>{project.location}</span>
             <span>&bull;</span>
-            <span>Data: {format(parseISO(project.completionDate), 'd MMMM yyyy', { locale: it })}</span>
+            <span>Periodo: {format(parseISO(project.startDate), 'd MMMM yyyy', { locale: it })} - {format(parseISO(project.endDate), 'd MMMM yyyy', { locale: it })}</span>
         </div>
         <h1 className="text-3xl md:text-5xl font-bold font-headline mb-6">{project.name}</h1>
         
@@ -84,24 +84,12 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             </span>
           </div>
           <div className="flex flex-col">
-            <span className="font-semibold text-muted-foreground uppercase tracking-wider">Classificazione</span>
-            <span className="text-foreground">{project.classification}</span>
+            <span className="font-semibold text-muted-foreground uppercase tracking-wider">Categoria Opere</span>
+            <span className="text-foreground">{project.category}</span>
           </div>
            <div className="flex flex-col">
             <span className="font-semibold text-muted-foreground uppercase tracking-wider">Prestazione</span>
             <span className="text-foreground">{project.service}</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="font-semibold text-muted-foreground uppercase tracking-wider">Categoria Opere</span>
-            <span className="text-foreground">{project.category}</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="font-semibold text-muted-foreground uppercase tracking-wider">Tipologia</span>
-            <span className="text-foreground">{project.typology}</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="font-semibold text-muted-foreground uppercase tracking-wider">Intervento</span>
-            <span className="text-foreground">{project.intervention}</span>
           </div>
         </div>
 
