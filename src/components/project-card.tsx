@@ -20,8 +20,8 @@ import { Button } from "./ui/button";
 
 interface ProjectCardProps {
   project: Project;
-  onEdit: (project: Project) => void;
-  onDelete: (id: string) => void;
+  onEdit?: (project: Project) => void;
+  onDelete?: (id: string) => void;
 }
 
 export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
@@ -31,8 +31,10 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
     Conceptual: "bg-purple-500 hover:bg-purple-600",
   };
 
+  const isPublic = !onEdit && !onDelete;
+
   return (
-    <Card className="overflow-hidden transition-all duration-300 ease-in-out group hover:shadow-xl">
+    <Card className="overflow-hidden transition-all duration-300 ease-in-out h-full flex flex-col group-hover:shadow-xl">
       <CardHeader className="p-0 relative">
         <Image
           src={project.image}
@@ -42,27 +44,29 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
           className="object-cover w-full h-48 transition-transform duration-300 ease-in-out group-hover:scale-105"
           data-ai-hint="architecture design"
         />
-        <div className="absolute top-2 right-2">
-           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+        {!isPublic && (
+          <div className="absolute top-2 right-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button variant="secondary" size="icon" className="h-8 w-8 bg-black/50 hover:bg-black/75 text-white">
-                    <MoreVertical className="h-4 w-4" />
+                  <MoreVertical className="h-4 w-4" />
                 </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEdit(project)}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    <span>Edit</span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onEdit?.(project)}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  <span>Edit</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onDelete(project.id)} className="text-destructive focus:text-destructive">
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    <span>Delete</span>
+                <DropdownMenuItem onClick={() => onDelete?.(project.id)} className="text-destructive focus:text-destructive">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  <span>Delete</span>
                 </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
-        </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
       </CardHeader>
-      <CardContent className="p-4">
+      <CardContent className="p-4 flex-grow flex flex-col">
         <div className="flex items-start justify-between">
           <CardTitle className="mb-2 text-lg font-bold leading-tight font-headline">
             {project.name}
@@ -73,7 +77,7 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
             {project.status}
           </Badge>
         </div>
-        <p className="text-sm text-muted-foreground line-clamp-2">
+        <p className="text-sm text-muted-foreground line-clamp-2 flex-grow">
           {project.description}
         </p>
       </CardContent>
