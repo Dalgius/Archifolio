@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { notFound } from 'next/navigation';
+import { format, parseISO } from 'date-fns';
 
 export async function generateStaticParams() {
   return projects.map((project) => ({
@@ -43,7 +44,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             <span>&bull;</span>
             <span>{project.location}</span>
             <span>&bull;</span>
-            <span>Completed: {new Date(project.completionDate).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            <span>Completed: {format(parseISO(project.completionDate), 'LLLL d, yyyy')}</span>
         </div>
         <h1 className="text-3xl md:text-5xl font-bold font-headline mb-6">{project.name}</h1>
         <div className="prose prose-lg max-w-none text-foreground/80">
