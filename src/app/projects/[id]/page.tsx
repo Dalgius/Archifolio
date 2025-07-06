@@ -1,4 +1,7 @@
-import { projects } from '@/lib/data';
+
+'use client';
+
+import * as React from 'react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft } from 'lucide-react';
@@ -7,14 +10,34 @@ import { Button } from '@/components/ui/button';
 import { notFound } from 'next/navigation';
 import { format, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
-
-export async function generateStaticParams() {
-  return projects.filter(p => p.isPublic).map((project) => ({
-    id: project.id,
-  }));
-}
+import { useProjects } from '@/hooks/use-projects';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProjectPage({ params }: { params: { id: string } }) {
+  const { projects, isInitialized } = useProjects();
+
+  if (!isInitialized) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <Skeleton className="h-10 w-48 mb-8" />
+        <article className="max-w-4xl mx-auto">
+          <Skeleton className="w-full h-[400px] rounded-lg mb-8" />
+          <div className="flex gap-4 items-center mb-4">
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-6 w-48" />
+          </div>
+          <Skeleton className="h-12 w-3/4 mb-6" />
+          <div className="space-y-4">
+            <Skeleton className="h-5 w-full" />
+            <Skeleton className="h-5 w-full" />
+            <Skeleton className="h-5 w-5/6" />
+          </div>
+        </article>
+      </div>
+    );
+  }
+
   const project = projects.find((p) => p.id === params.id);
 
   if (!project || !project.isPublic) {

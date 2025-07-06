@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -13,19 +14,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 import type { Project, ProjectStatus } from "@/types";
-import { projects as initialProjects } from "@/lib/data";
+import { useProjects } from "@/hooks/use-projects";
 import { ProjectCard } from "@/components/project-card";
 import { ProjectForm } from "@/components/project-form";
 import { PdfExportDialog } from "@/components/pdf-export-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminPage() {
-  const [projects, setProjects] = React.useState<Project[]>(initialProjects);
+  const { projects, addProject, updateProject, deleteProject, isInitialized } = useProjects();
   const [projectFormOpen, setProjectFormOpen] = React.useState(false);
   const [pdfExportOpen, setPdfExportOpen] = React.useState(false);
   const [editingProject, setEditingProject] = React.useState<Project | null>(null);
 
   const handleAddProject = (project: Project) => {
-    setProjects((prev) => [...prev, project]);
+    addProject(project);
     setProjectFormOpen(false);
   };
 
@@ -35,13 +37,13 @@ export default function AdminPage() {
   };
   
   const handleUpdateProject = (updatedProject: Project) => {
-    setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
+    updateProject(updatedProject);
     setEditingProject(null);
     setProjectFormOpen(false);
   }
 
   const handleDeleteProject = (projectId: string) => {
-    setProjects(projects.filter(p => p.id !== projectId));
+    deleteProject(projectId);
   };
 
   const projectStatuses: ProjectStatus[] = [
@@ -54,6 +56,32 @@ export default function AdminPage() {
     if (status === "All") return projects;
     return projects.filter((project) => project.status === status);
   };
+
+  if (!isInitialized) {
+    return (
+      <div className="flex flex-col h-full">
+        <header className="flex items-center justify-between p-4 border-b">
+           <Skeleton className="h-8 w-64" />
+           <div className="flex gap-2">
+            <Skeleton className="h-10 w-10" />
+            <Skeleton className="h-10 w-36" />
+           </div>
+        </header>
+        <main className="flex-1 p-4 md:p-6">
+          <Skeleton className="h-10 w-64 mb-6" />
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))}
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
