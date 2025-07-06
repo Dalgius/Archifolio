@@ -6,8 +6,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import {
   CalendarIcon,
-  Loader2,
-  Sparkles,
   UploadCloud,
   X,
 } from "lucide-react";
@@ -46,8 +44,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { generateDescriptionAction } from "@/lib/actions";
-import type { Project, ProjectStatus } from "@/types";
+import type { Project } from "@/types";
 import Image from "next/image";
 
 const projectSchema = z.object({
@@ -70,7 +67,6 @@ interface ProjectFormProps {
 
 export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onClose }: ProjectFormProps) {
   const { toast } = useToast();
-  const [isGenerating, setIsGenerating] = React.useState(false);
   const [imagePreview, setImagePreview] = React.useState<string | null>(projectToEdit?.image || null);
 
   const form = useForm<ProjectFormValues>({
@@ -103,46 +99,6 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
         setImagePreview(watchedImage);
     }
   }, [watchedImage]);
-
-
-  const handleGenerateDescription = async () => {
-    const { name, status, location, completionDate } = form.getValues();
-    if (!name || !status || !location || !completionDate || !imagePreview) {
-      toast({
-        variant: "destructive",
-        title: "Missing Information",
-        description: "Please fill in all project details and upload an image before generating a description.",
-      });
-      return;
-    }
-
-    setIsGenerating(true);
-    try {
-      const result = await generateDescriptionAction({
-        projectName: name,
-        projectType: status,
-        location,
-        completionDate: format(completionDate, "PPP"),
-        imageDataUri: imagePreview,
-      });
-
-      if (result.success && result.description) {
-        form.setValue("description", result.description, { shouldValidate: true });
-        toast({ title: "Description generated successfully!" });
-      } else {
-        throw new Error(result.error);
-      }
-    } catch (error) {
-      console.error(error);
-      toast({
-        variant: "destructive",
-        title: "Generation Failed",
-        description: (error as Error).message,
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
 
   const onSubmit = (data: ProjectFormValues) => {
     const projectData = {
@@ -308,23 +264,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
             name="description"
             render={({ field }) => (
               <FormItem>
-                <div className="flex items-center justify-between">
-                  <FormLabel>Description</FormLabel>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleGenerateDescription}
-                    disabled={isGenerating}
-                  >
-                    {isGenerating ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="mr-2 h-4 w-4 text-yellow-500" />
-                    )}
-                    Generate with AI
-                  </Button>
-                </div>
+                <FormLabel>Description</FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder="Describe the project's vision, materials, and challenges..."
