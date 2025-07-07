@@ -20,6 +20,12 @@ if (!firebaseConfig.projectId || !firebaseConfig.apiKey) {
   throw new Error("La configurazione di Firebase non è completa. Apri il file `.env` e inserisci le tue credenziali prese dalla console di Firebase.");
 }
 
+// Aggiungo un controllo specifico per l'ID del progetto vecchio e problematico.
+if (firebaseConfig.projectId === 'archifolio-a53f3') {
+  throw new Error("ERRORE: Stai usando le credenziali del vecchio progetto Firebase ('archifolio-a53f3'). Devi usare le chiavi del NUOVO progetto che hai creato. Apri il file `.env` e sostituisci le credenziali.");
+}
+
+
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
