@@ -352,7 +352,12 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
               <FormItem>
                 <FormLabel>Importo Lavori (€)</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="es. 530000" {...field} />
+                  <Input
+                    type="number"
+                    placeholder="es. 530000"
+                    {...field}
+                    onFocus={(e) => e.target.select()}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
