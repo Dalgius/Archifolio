@@ -1,13 +1,12 @@
-
 "use client";
 
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
-import { CalendarIcon, Upload } from "lucide-react";
+import { CalendarIcon, Upload, Trash2 } from "lucide-react";
 import Image from "next/image";
 import imageCompression from "browser-image-compression";
 
@@ -57,6 +56,7 @@ const projectSchema = z.object({
   ),
   status: z.enum(["Completato", "In Corso", "Concettuale", "Da fare"]),
   category: z.string().min(1, "La categoria è obbligatoria"),
+  works: z.array(z.string()).default([]),
   isPublic: z.boolean().default(true),
 }).refine(data => data.endDate >= data.startDate, {
   message: "La data di fine non può essere precedente alla data di inizio",
@@ -85,6 +85,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
       startDate: new Date(projectToEdit.startDate),
       endDate: new Date(projectToEdit.endDate),
       amount: projectToEdit.amount || 0,
+      works: projectToEdit.works || [],
     } : {
       name: "",
       image: "https://placehold.co/600x400.png",
@@ -96,8 +97,14 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
       amount: 0,
       status: "In Corso",
       category: "",
+      works: [],
       isPublic: true,
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "works",
   });
 
   const status = form.watch("status");
@@ -160,7 +167,6 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
       classification: projectToEdit?.classification || "",
       typology: projectToEdit?.typology || "",
       intervention: projectToEdit?.intervention || "",
-      works: projectToEdit?.works || [],
       description: projectToEdit?.description || "",
     };
 
@@ -413,6 +419,51 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
               </FormItem>
             )}
           />
+        </div>
+
+        <div className="border-t pt-6">
+          <FormLabel>Lavori Principali</FormLabel>
+          <FormDescription>
+            Elenca i principali lavori eseguiti nel progetto. Saranno visibili nella pagina di dettaglio.
+          </FormDescription>
+          <div className="space-y-2 mt-4">
+            {fields.map((field, index) => (
+              <FormField
+                key={field.id}
+                control={form.control}
+                name={`works.${index}`}
+                render={({ field: formField }) => (
+                  <FormItem>
+                    <div className="flex items-center gap-2">
+                      <FormControl>
+                        <Input {...formField} value={formField.value || ''} placeholder={`Lavoro #${index + 1}`} />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => remove(index)}
+                        className="shrink-0"
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <span className="sr-only">Rimuovi lavoro</span>
+                      </Button>
+                    </div>
+                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ))}
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-2"
+            onClick={() => append("")}
+          >
+            Aggiungi Lavoro
+          </Button>
         </div>
 
         <FormField
