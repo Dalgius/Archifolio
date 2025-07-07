@@ -44,7 +44,7 @@ import { Switch } from "@/components/ui/switch";
 const projectSchema = z.object({
   name: z.string().min(1, "Il titolo è obbligatorio"),
   image: z.string().min(1, "L'immagine è obbligatoria").refine(val => val.startsWith('data:image/') || val.startsWith('https://placehold.co'), {
-    message: "Carica un\'immagine per il progetto."
+    message: "Carica un'immagine per il progetto."
   }),
   location: z.string().min(1, "La località è obbligatoria"),
   startDate: z.date({ required_error: "La data di inizio è obbligatoria" }),
@@ -160,7 +160,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-4 max-h-[80vh] overflow-y-auto pr-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-4 max-h-[80vh] overflow-y-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
             <div className="md:col-span-2 space-y-6">
                 <FormField
