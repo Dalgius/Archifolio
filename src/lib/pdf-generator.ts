@@ -66,7 +66,7 @@ export async function generatePortfolioPDF(projects: Project[]) {
     y += 15;
 
     for (const project of projectsWithImageData) {
-        const projectBlockHeight = 65; 
+        const projectBlockHeight = 70; 
         if (y + projectBlockHeight > pageHeight - margin - 5) {
             doc.addPage();
             pageNumber++;
@@ -110,7 +110,7 @@ export async function generatePortfolioPDF(projects: Project[]) {
         
         const presentString = "presente";
         const endDateFormatted = format(parseISO(project.endDate), 'MM/yyyy');
-        const isPresent = new Date(project.endDate).getFullYear() >= new Date().getFullYear();
+        const isPresent = new Date(project.endDate) > new Date();
         
         const dateString = `${format(parseISO(project.startDate), 'MM/yyyy')} - ${isPresent ? presentString : endDateFormatted}`;
 
@@ -123,7 +123,9 @@ export async function generatePortfolioPDF(projects: Project[]) {
         textY += 5;
         doc.text(`Prestazione: ${project.service}`, textX, textY);
         textY += 5;
-        const formattedAmount = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(project.amount);
+        doc.text(`Categoria Opere: ${project.category}`, textX, textY);
+        textY += 5;
+        const formattedAmount = new Intl.NumberFormat('it-IT', { style: 'currency', 'currency': 'EUR' }).format(project.amount);
         doc.text(`Importo: ${formattedAmount}`, textX, textY);
         textY += 5;
         doc.text(`Stato: ${project.status}`, textX, textY);
