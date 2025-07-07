@@ -64,7 +64,7 @@ const projectSchema = z.object({
 type ProjectFormValues = z.infer<typeof projectSchema>;
 
 interface ProjectFormProps {
-  onAddProject: (project: Project) => void;
+  onAddProject: (project: Omit<Project, 'id'>) => void;
   onUpdateProject: (project: Project) => void;
   projectToEdit?: Project | null;
   onClose: () => void;
@@ -114,32 +114,21 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
   }, [watchedImage]);
 
   const onSubmit = (data: ProjectFormValues) => {
-    // Keep fields that are not in the form but exist in the project type
-    const existingData = projectToEdit ? {
-      classification: projectToEdit.classification,
-      typology: projectToEdit.typology,
-      intervention: projectToEdit.intervention,
-      works: projectToEdit.works,
-      description: projectToEdit.description,
-    } : {
-      classification: "",
-      typology: "",
-      intervention: "",
-      works: [],
-      description: "",
-    };
-
-    const projectData: Project = {
-      ...existingData,
+    const projectData = {
       ...data,
-      id: projectToEdit?.id || new Date().toISOString(),
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       endDate: format(data.endDate, 'yyyy-MM-dd'),
       image: imagePreview!,
+       // Fields that are not in the form but are in the type
+      classification: projectToEdit?.classification || "",
+      typology: projectToEdit?.typology || "",
+      intervention: projectToEdit?.intervention || "",
+      works: projectToEdit?.works || [],
+      description: projectToEdit?.description || "",
     };
 
     if (projectToEdit) {
-      onUpdateProject(projectData);
+      onUpdateProject({ ...projectData, id: projectToEdit.id });
       toast({ title: "Progetto aggiornato con successo!" });
     } else {
       onAddProject(projectData);
