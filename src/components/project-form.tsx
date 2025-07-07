@@ -100,6 +100,8 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
     },
   });
 
+  const status = form.watch("status");
+
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -305,6 +307,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
                           "w-full pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
                         )}
+                        disabled={status === "In Corso"}
                       >
                         {field.value ? (
                           format(field.value, "PPP", { locale: it })
