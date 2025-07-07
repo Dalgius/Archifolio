@@ -2,13 +2,12 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
-import { CalendarIcon, UploadCloud, X } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import type { Project } from "@/types";
@@ -53,7 +52,6 @@ const projectSchema = z.object({
   ),
   status: z.enum(["Completato", "In Corso", "Concettuale", "Da fare"]),
   category: z.string().min(1, "La categoria è obbligatoria"),
-  image: z.any().refine((files) => files?.[0] || typeof files === 'string', "L'immagine è obbligatoria."),
   isPublic: z.boolean().default(true),
 }).refine(data => data.endDate >= data.startDate, {
   message: "La data di fine non può essere precedente alla data di inizio",
@@ -72,7 +70,6 @@ interface ProjectFormProps {
 
 export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onClose }: ProjectFormProps) {
   const { toast } = useToast();
-  const [imagePreview, setImagePreview] = React.useState<string | null>(projectToEdit?.image || null);
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
@@ -80,7 +77,6 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
       ...projectToEdit,
       startDate: new Date(projectToEdit.startDate),
       endDate: new Date(projectToEdit.endDate),
-      image: projectToEdit.image,
       amount: projectToEdit.amount || 0,
     } : {
       name: "",
@@ -96,29 +92,11 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
     },
   });
 
-  const watchedImage = form.watch("image");
-
-  React.useEffect(() => {
-    if (watchedImage && typeof watchedImage !== 'string' && watchedImage.length > 0) {
-      const file = watchedImage[0];
-      if (file instanceof File) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setImagePreview(reader.result as string);
-        };
-        reader.readAsDataURL(file);
-      }
-    } else if (typeof watchedImage === 'string') {
-      setImagePreview(watchedImage);
-    }
-  }, [watchedImage]);
-
   const onSubmit = (data: ProjectFormValues) => {
-    const projectData = {
+    const baseProjectData = {
       ...data,
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       endDate: format(data.endDate, 'yyyy-MM-dd'),
-      image: imagePreview!,
        // Fields that are not in the form but are in the type
       classification: projectToEdit?.classification || "",
       typology: projectToEdit?.typology || "",
@@ -128,10 +106,10 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
     };
 
     if (projectToEdit) {
-      onUpdateProject({ ...projectData, id: projectToEdit.id });
+      onUpdateProject({ ...baseProjectData, image: projectToEdit.image, id: projectToEdit.id });
       toast({ title: "Progetto aggiornato con successo!" });
     } else {
-      onAddProject(projectData);
+      onAddProject({ ...baseProjectData, image: 'https://placehold.co/600x400.png' });
       toast({ title: "Progetto aggiunto con successo!" });
     }
     onClose();
@@ -321,45 +299,6 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
               </FormItem>
             )}
           />
-        </div>
-
-        <div className="space-y-2">
-            <FormLabel>Immagine del Progetto</FormLabel>
-            <FormField
-            control={form.control}
-            name="image"
-            render={({ field }) => (
-                <FormItem>
-                <FormControl>
-                    <div className="relative w-full h-48 border-2 border-dashed rounded-md flex items-center justify-center text-muted-foreground hover:border-primary transition-colors">
-                    <Input
-                        type="file"
-                        accept="image/*"
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        onChange={(e) => field.onChange(e.target.files)}
-                    />
-                    {imagePreview ? (
-                        <>
-                        <Image src={imagePreview} alt="Anteprima" layout="fill" className="object-cover rounded-md" />
-                        <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-6 w-6 z-10" onClick={() => {
-                            setImagePreview(null);
-                            form.setValue("image", null);
-                        }}>
-                            <X className="h-4 w-4" />
-                        </Button>
-                        </>
-                    ) : (
-                        <div className="text-center">
-                        <UploadCloud className="mx-auto h-8 w-8" />
-                        <p>Carica o trascina un'immagine</p>
-                        </div>
-                    )}
-                    </div>
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
         </div>
 
         <FormField
