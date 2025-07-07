@@ -67,8 +67,8 @@ const projectSchema = z.object({
 type ProjectFormValues = z.infer<typeof projectSchema>;
 
 interface ProjectFormProps {
-  onAddProject: (project: Omit<Project, 'id'>) => void;
-  onUpdateProject: (project: Project) => void;
+  onAddProject: (project: Omit<Project, 'id'>) => Promise<void>;
+  onUpdateProject: (project: Project) => Promise<void>;
   projectToEdit?: Project | null;
   onClose: () => void;
 }
@@ -76,6 +76,7 @@ interface ProjectFormProps {
 export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onClose }: ProjectFormProps) {
   const { toast } = useToast();
   const [isCompressing, setIsCompressing] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
@@ -134,7 +135,8 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
   };
 
 
-  const onSubmit = (data: ProjectFormValues) => {
+  const onSubmit = async (data: ProjectFormValues) => {
+    setIsSubmitting(true);
     const projectData = {
       ...data,
       startDate: format(data.startDate, 'yyyy-MM-dd'),
@@ -146,14 +148,20 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
       description: projectToEdit?.description || "",
     };
 
-    if (projectToEdit) {
-      onUpdateProject({ ...projectData, id: projectToEdit.id });
-      toast({ title: "Progetto aggiornato con successo!" });
-    } else {
-      onAddProject(projectData);
-      toast({ title: "Progetto aggiunto con successo!" });
+    try {
+      if (projectToEdit) {
+        await onUpdateProject({ ...projectData, id: projectToEdit.id });
+        toast({ title: "Progetto aggiornato con successo!" });
+      } else {
+        await onAddProject(projectData);
+        toast({ title: "Progetto aggiunto con successo!" });
+      }
+      onClose();
+    } catch (error) {
+        // Error toast is handled in the useProjects hook
+    } finally {
+        setIsSubmitting(false);
     }
-    onClose();
   };
   
   const imageValue = form.watch('image');
@@ -409,7 +417,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
           <Button type="button" variant="outline" onClick={onClose}>
             Annulla
           </Button>
-          <Button type="submit" disabled={isCompressing}>{projectToEdit ? 'Aggiorna Progetto' : 'Aggiungi Progetto'}</Button>
+          <Button type="submit" disabled={isCompressing || isSubmitting}>{isSubmitting ? 'Salvataggio...' : projectToEdit ? 'Aggiorna Progetto' : 'Aggiungi Progetto'}</Button>
         </div>
       </form>
     </Form>

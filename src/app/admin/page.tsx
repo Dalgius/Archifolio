@@ -8,13 +8,24 @@ import {
   FileText,
 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 import type { Project, ProjectStatus } from "@/types";
 import { useProjects } from "@/hooks/use-projects";
+import { useToast } from "@/hooks/use-toast";
 import { ProjectCard } from "@/components/project-card";
 import { ProjectForm } from "@/components/project-form";
 import { PdfExportDialog } from "@/components/pdf-export-dialog";
@@ -24,12 +35,15 @@ export const dynamic = 'force-dynamic';
 
 export default function AdminPage() {
   const { projects, addProject, updateProject, deleteProject, isInitialized } = useProjects();
+  const { toast } = useToast();
   const [projectFormOpen, setProjectFormOpen] = React.useState(false);
   const [pdfExportOpen, setPdfExportOpen] = React.useState(false);
   const [editingProject, setEditingProject] = React.useState<Project | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
+  const [projectToDelete, setProjectToDelete] = React.useState<Project | null>(null);
 
-  const handleAddProject = (project: Project) => {
-    addProject(project);
+  const handleAddProject = async (project: Omit<Project, 'id'>) => {
+    await addProject(project);
     setProjectFormOpen(false);
   };
 
@@ -38,14 +52,24 @@ export default function AdminPage() {
     setProjectFormOpen(true);
   };
   
-  const handleUpdateProject = (updatedProject: Project) => {
-    updateProject(updatedProject);
+  const handleUpdateProject = async (updatedProject: Project) => {
+    await updateProject(updatedProject);
     setEditingProject(null);
     setProjectFormOpen(false);
   }
 
-  const handleDeleteProject = (projectId: string) => {
-    deleteProject(projectId);
+  const handleDeleteInitiated = (project: Project) => {
+    setProjectToDelete(project);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirmed = () => {
+    if (projectToDelete) {
+      deleteProject(projectToDelete.id);
+      toast({ title: "Progetto eliminato." });
+      setDeleteConfirmOpen(false);
+      setProjectToDelete(null);
+    }
   };
 
   const projectStatuses: ProjectStatus[] = [
@@ -146,21 +170,40 @@ export default function AdminPage() {
           </TabsList>
 
           <TabsContent value="All">
-            <ProjectGrid projects={filteredProjects("All")} onEdit={handleEditProject} onDelete={handleDeleteProject} />
+            <ProjectGrid projects={filteredProjects("All")} onEdit={handleEditProject} onDelete={handleDeleteInitiated} />
           </TabsContent>
 
           {projectStatuses.map((status) => (
             <TabsContent key={status} value={status}>
-              <ProjectGrid projects={filteredProjects(status)} onEdit={handleEditProject} onDelete={handleDeleteProject} />
+              <ProjectGrid projects={filteredProjects(status)} onEdit={handleEditProject} onDelete={handleDeleteInitiated} />
             </TabsContent>
           ))}
         </Tabs>
       </main>
+      
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Questa azione non può essere annullata. Il progetto "{projectToDelete?.name}" verrà eliminato definitivamente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setProjectToDelete(null)}>Annulla</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteConfirmed} 
+              className={buttonVariants({ variant: "destructive" })}>
+                Elimina
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
 
-function ProjectGrid({ projects, onEdit, onDelete }: { projects: Project[], onEdit: (project: Project) => void, onDelete: (id: string) => void }) {
+function ProjectGrid({ projects, onEdit, onDelete }: { projects: Project[], onEdit: (project: Project) => void, onDelete: (project: Project) => void }) {
   if (projects.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4 text-center border-2 border-dashed rounded-lg">

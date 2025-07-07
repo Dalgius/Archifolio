@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -23,7 +24,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/comp
 interface ProjectCardProps {
   project: Project;
   onEdit?: (project: Project) => void;
-  onDelete?: (id: string) => void;
+  onDelete?: (project: Project) => void;
 }
 
 export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
@@ -60,7 +61,7 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
                     <Edit className="mr-2 h-4 w-4" />
                     <span>Modifica</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onDelete?.(project.id)} className="text-destructive focus:text-destructive">
+                  <DropdownMenuItem onClick={() => onDelete?.(project)} className="text-destructive focus:text-destructive">
                     <Trash2 className="mr-2 h-4 w-4" />
                     <span>Elimina</span>
                   </DropdownMenuItem>
