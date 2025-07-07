@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { collection, getDocs, updateDoc, deleteDoc, doc, setDoc } from 'firebase/firestore';
+import { collection, onSnapshot, updateDoc, deleteDoc, doc, setDoc } from 'firebase/firestore';
 import type { Project } from '@/types';
 import { db } from '@/lib/firebase';
 import { useToast } from './use-toast';
@@ -15,42 +15,36 @@ export function useProjects() {
 
   // Load projects from Firestore on initial render
   React.useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const projectsCollection = collection(db, 'projects');
-        const projectSnapshot = await getDocs(projectsCollection);
-        const projectList = projectSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        } as Project));
-        setProjects(projectList);
-      } catch (error) {
-        console.error("Error fetching projects from Firestore:", error);
-        toast({
-          variant: "destructive",
-          title: "Errore di caricamento",
-          description: "Impossibile caricare i progetti dal database.",
-        });
-      } finally {
-        setIsInitialized(true);
-      }
-    };
+    const projectsCollection = collection(db, 'projects');
+    
+    const unsubscribe = onSnapshot(projectsCollection, (snapshot) => {
+      const projectList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      } as Project));
+      setProjects(projectList);
+      setIsInitialized(true);
+    }, (error) => {
+      console.error("Error fetching projects with listener:", error);
+      toast({
+        variant: "destructive",
+        title: "Errore di connessione",
+        description: "Impossibile caricare i progetti in tempo reale.",
+      });
+      setIsInitialized(true); // Set to true to unblock UI even on error
+    });
 
-    fetchProjects();
+    // Cleanup listener on unmount
+    return () => unsubscribe();
   }, [toast]);
 
   const addProject = async (projectData: Omit<Project, 'id'>) => {
     try {
       // Create a new document reference with a unique ID
       const newProjectRef = doc(collection(db, 'projects'));
-      const projectId = newProjectRef.id;
-
-      // Set the document data in Firestore
+      
+      // Set the document data in Firestore. The onSnapshot listener will update the UI.
       await setDoc(newProjectRef, projectData);
-
-      // Update the local state
-      const newProject = { id: projectId, ...projectData } as Project;
-      setProjects(prevProjects => [...prevProjects, newProject]);
     } catch (error) {
       console.error("Error adding project:", error);
       toast({
@@ -66,10 +60,8 @@ export function useProjects() {
     const projectRef = doc(db, 'projects', id);
 
     try {
+      // The onSnapshot listener will update the UI.
       await updateDoc(projectRef, projectData);
-      setProjects(prevProjects =>
-        prevProjects.map(p => (p.id === id ? updatedProject : p))
-      );
     } catch (error) {
        console.error("Error updating project:", error);
        toast({
@@ -82,12 +74,9 @@ export function useProjects() {
 
   const deleteProject = async (projectId: string) => {
     try {
-      // Delete the Firestore document
       const projectRef = doc(db, 'projects', projectId);
+      // The onSnapshot listener will update the UI.
       await deleteDoc(projectRef);
-      
-      // Update local state
-      setProjects(prevProjects => prevProjects.filter(p => p.id !== projectId));
     } catch (error) {
         console.error("Error deleting project:", error);
         toast({
