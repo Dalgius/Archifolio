@@ -7,7 +7,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Upload } from "lucide-react";
+import Image from "next/image";
+import imageCompression from "browser-image-compression";
 
 import { cn } from "@/lib/utils";
 import type { Project } from "@/types";
@@ -41,6 +43,9 @@ import { Switch } from "@/components/ui/switch";
 
 const projectSchema = z.object({
   name: z.string().min(1, "Il titolo è obbligatorio"),
+  image: z.string().min(1, "L'immagine è obbligatoria").refine(val => val.startsWith('data:image/') || val.startsWith('https://placehold.co'), {
+    message: "Carica un\'immagine per il progetto."
+  }),
   location: z.string().min(1, "La località è obbligatoria"),
   startDate: z.date({ required_error: "La data di inizio è obbligatoria" }),
   endDate: z.date({ required_error: "La data di fine è obbligatoria" }),
@@ -70,6 +75,7 @@ interface ProjectFormProps {
 
 export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onClose }: ProjectFormProps) {
   const { toast } = useToast();
+  const [isCompressing, setIsCompressing] = React.useState(false);
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
@@ -80,6 +86,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
       amount: projectToEdit.amount || 0,
     } : {
       name: "",
+      image: "https://placehold.co/600x400.png",
       location: "",
       startDate: new Date(),
       endDate: new Date(),
@@ -92,12 +99,46 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
     },
   });
 
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsCompressing(true);
+    toast({ title: "Compressione immagine...", description: "Attendere prego, potrebbe richiedere un momento." });
+
+    const options = {
+      maxSizeMB: 0.9,
+      maxWidthOrHeight: 1920,
+      useWebWorker: true,
+    };
+
+    try {
+      const compressedFile = await imageCompression(file, options);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        form.setValue("image", reader.result as string, { shouldValidate: true });
+        toast({ title: "Immagine caricata e compressa!" });
+        setIsCompressing(false);
+      };
+      reader.readAsDataURL(compressedFile);
+    } catch (error) {
+      console.error("Error compressing image:", error);
+      toast({
+        variant: "destructive",
+        title: "Errore di compressione",
+        description: "Impossibile comprimere l'immagine. Prova con un file diverso.",
+      });
+      setIsCompressing(false);
+    }
+  };
+
+
   const onSubmit = (data: ProjectFormValues) => {
-    const baseProjectData = {
+    const projectData = {
       ...data,
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       endDate: format(data.endDate, 'yyyy-MM-dd'),
-       // Fields that are not in the form but are in the type
       classification: projectToEdit?.classification || "",
       typology: projectToEdit?.typology || "",
       intervention: projectToEdit?.intervention || "",
@@ -106,59 +147,102 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
     };
 
     if (projectToEdit) {
-      onUpdateProject({ ...baseProjectData, image: projectToEdit.image, id: projectToEdit.id });
+      onUpdateProject({ ...projectData, id: projectToEdit.id });
       toast({ title: "Progetto aggiornato con successo!" });
     } else {
-      onAddProject({ ...baseProjectData, image: 'https://placehold.co/600x400.png' });
+      onAddProject(projectData);
       toast({ title: "Progetto aggiunto con successo!" });
     }
     onClose();
   };
+  
+  const imageValue = form.watch('image');
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-4">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Titolo del Progetto</FormLabel>
-              <FormControl>
-                <Input placeholder="es. Intervento Sicurezza Sismica su Villa Storica" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="location"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Località</FormLabel>
-                <FormControl>
-                  <Input placeholder="es. Castelnuovo (IS)" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="client"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Committente</FormLabel>
-                <FormControl>
-                  <Input placeholder="es. Diocesi di Isernia" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-4 max-h-[80vh] overflow-y-auto pr-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
+            <div className="md:col-span-2 space-y-6">
+                <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Titolo del Progetto</FormLabel>
+                        <FormControl>
+                            <Input placeholder="es. Intervento Sicurezza Sismica su Villa Storica" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="location"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Località</FormLabel>
+                            <FormControl>
+                            <Input placeholder="es. Castelnuovo (IS)" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="client"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Committente</FormLabel>
+                            <FormControl>
+                            <Input placeholder="es. Diocesi di Isernia" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                </div>
+            </div>
+
+            <div className="md:col-span-1 space-y-2">
+                 <FormLabel>Immagine Progetto</FormLabel>
+                 <div className="relative w-full aspect-[4/3] rounded-md overflow-hidden border bg-muted">
+                      {imageValue && (
+                        <Image 
+                          src={imageValue} 
+                          alt="Anteprima progetto" 
+                          fill={true}
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          style={{ objectFit: 'cover' }}
+                          data-ai-hint="architecture design"
+                          />
+                      )}
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                         <Button type="button" variant="secondary" asChild>
+                             <label htmlFor="image-upload" className="cursor-pointer">
+                                 <Upload className="mr-2" />
+                                 <span>{isCompressing ? "Comprimo..." : "Cambia"}</span>
+                                 <Input id="image-upload" type="file" className="sr-only" accept="image/*" onChange={handleImageUpload} disabled={isCompressing} />
+                             </label>
+                         </Button>
+                      </div>
+                 </div>
+                 <FormField
+                  control={form.control}
+                  name="image"
+                  render={() => (
+                    <FormItem>
+                      <FormMessage className="mt-2" />
+                    </FormItem>
+                  )}
+                />
+            </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <FormField
             control={form.control}
             name="startDate"
@@ -325,7 +409,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
           <Button type="button" variant="outline" onClick={onClose}>
             Annulla
           </Button>
-          <Button type="submit">{projectToEdit ? 'Aggiorna Progetto' : 'Aggiungi Progetto'}</Button>
+          <Button type="submit" disabled={isCompressing}>{projectToEdit ? 'Aggiorna Progetto' : 'Aggiungi Progetto'}</Button>
         </div>
       </form>
     </Form>
