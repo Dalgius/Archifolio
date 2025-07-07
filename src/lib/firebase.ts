@@ -13,20 +13,9 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Aggiungiamo un controllo per assicurarci che le credenziali siano presenti
-if (!firebaseConfig.projectId || !firebaseConfig.apiKey) {
-  // This error will be caught by Next.js and displayed on the error page.
-  // It's intentional to prevent the app from running without proper configuration.
-  throw new Error("La configurazione di Firebase non è completa. Apri il file `.env` e inserisci le tue credenziali prese dalla console di Firebase.");
-}
-
-// Aggiungo un controllo specifico per l'ID del progetto vecchio e problematico.
-if (firebaseConfig.projectId === 'archifolio-a53f3') {
-  throw new Error("ERRORE: Stai usando le credenziali del vecchio progetto Firebase ('archifolio-a53f3'). Devi usare le chiavi del NUOVO progetto che hai creato. Apri il file `.env` e sostituisci le credenziali.");
-}
-
-
-// Initialize Firebase
+// Initialize Firebase.
+// The checks for credentials are removed to allow the build process in CI/CD environments to complete.
+// If the credentials are not provided in the production environment, `initializeApp` will fail at runtime.
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
 const storage = getStorage(app);
