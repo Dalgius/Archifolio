@@ -67,6 +67,7 @@ export async function generatePortfolioPDF(projects: Project[]) {
     for (const project of projectsWithImageData) {
         const projectBlockHeight = 70; 
         if (y + projectBlockHeight > pageHeight - margin - 5) {
+            drawFooter();
             doc.addPage();
             pageNumber++;
             y = margin + 5;
@@ -116,20 +117,27 @@ export async function generatePortfolioPDF(projects: Project[]) {
         }
 
         const locationDate = `${project.location} ${dateString}`;
-        doc.text(locationDate, textX, textY);
-        textY += 8;
+        const locationLines = doc.splitTextToSize(locationDate, textWidth);
+        doc.text(locationLines, textX, textY);
+        textY += locationLines.length * 5 + 3;
 
         doc.setTextColor(120, 120, 120);
-        doc.text(`Committente: ${project.client}`, textX, textY);
-        textY += 5;
-        doc.text(`Prestazione: ${project.service}`, textX, textY);
-        textY += 5;
-        doc.text(`Categoria Opere: ${project.category}`, textX, textY);
-        textY += 5;
+        
+        const addWrappedDetail = (label: string, value: string) => {
+            if (textY < y + imageHeight) { // Simple check to avoid writing over the next block
+                const detailLines = doc.splitTextToSize(`${label}: ${value}`, textWidth);
+                doc.text(detailLines, textX, textY);
+                textY += detailLines.length * 5;
+            }
+        };
+        
+        addWrappedDetail('Committente', project.client);
+        addWrappedDetail('Prestazione', project.service);
+        addWrappedDetail('Categoria Opere', project.category);
         const formattedAmount = new Intl.NumberFormat('it-IT', { style: 'currency', 'currency': 'EUR' }).format(project.amount);
-        doc.text(`Importo: ${formattedAmount}`, textX, textY);
-        textY += 5;
-        doc.text(`Stato: ${project.status}`, textX, textY);
+        addWrappedDetail('Importo', formattedAmount);
+        addWrappedDetail('Stato', project.status);
+
 
         y += projectBlockHeight;
     }
