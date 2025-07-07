@@ -46,6 +46,11 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
     notFound();
   }
 
+  const startDateFormatted = format(parseISO(project.startDate), 'd MMMM yyyy', { locale: it });
+  const endDateDisplay = project.status === 'In Corso' 
+    ? 'in corso' 
+    : format(parseISO(project.endDate), 'd MMMM yyyy', { locale: it });
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="mb-8">
@@ -70,7 +75,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             <span>&bull;</span>
             <span>{project.location}</span>
             <span>&bull;</span>
-            <span>Periodo: {format(parseISO(project.startDate), 'd MMMM yyyy', { locale: it })} - {format(parseISO(project.endDate), 'd MMMM yyyy', { locale: it })}</span>
+            <span>Periodo: {startDateFormatted} - {endDateDisplay}</span>
         </div>
         <h1 className="text-3xl md:text-5xl font-bold font-headline mb-6">{project.name}</h1>
         
