@@ -1,6 +1,8 @@
+
 "use client";
 
 import * as React from "react";
+import { Loader2 } from "lucide-react";
 import {
   DialogContent,
   DialogHeader,
@@ -12,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Project } from "@/types";
+import { generatePortfolioPDF } from "@/lib/pdf-generator";
+import { useToast } from "@/hooks/use-toast";
 
 interface PdfExportDialogProps {
   projects: Project[];
@@ -19,6 +23,8 @@ interface PdfExportDialogProps {
 
 export function PdfExportDialog({ projects }: PdfExportDialogProps) {
   const [selectedProjects, setSelectedProjects] = React.useState<string[]>([]);
+  const [isGenerating, setIsGenerating] = React.useState(false);
+  const { toast } = useToast();
 
   const handleSelectProject = (projectId: string) => {
     setSelectedProjects((prev) =>
@@ -39,6 +45,21 @@ export function PdfExportDialog({ projects }: PdfExportDialogProps) {
   const handleReset = () => {
     setSelectedProjects([]);
   }
+
+  const handleExport = async () => {
+    if (selectedProjects.length === 0) return;
+    setIsGenerating(true);
+    toast({ title: "Generazione PDF in corso...", description: "Potrebbe richiedere qualche momento." });
+    try {
+        const projectsToExport = projects.filter(p => selectedProjects.includes(p.id));
+        await generatePortfolioPDF(projectsToExport);
+    } catch (error) {
+        console.error("Failed to generate PDF", error);
+        toast({ variant: "destructive", title: "Errore", description: "Impossibile generare il PDF." });
+    } finally {
+        setIsGenerating(false);
+    }
+};
 
   return (
     <DialogContent className="sm:max-w-md">
@@ -80,7 +101,16 @@ export function PdfExportDialog({ projects }: PdfExportDialogProps) {
       </div>
        <DialogFooter>
         <Button variant="outline" onClick={handleReset}>Resetta</Button>
-        <Button disabled={selectedProjects.length === 0}>Scarica PDF (presto disponibile)</Button>
+        <Button onClick={handleExport} disabled={selectedProjects.length === 0 || isGenerating}>
+            {isGenerating ? (
+                <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generando...
+                </>
+            ) : (
+                "Scarica PDF"
+            )}
+        </Button>
       </DialogFooter>
     </DialogContent>
   );
