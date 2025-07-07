@@ -20,6 +20,8 @@ import { ProjectForm } from "@/components/project-form";
 import { PdfExportDialog } from "@/components/pdf-export-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 
+export const dynamic = 'force-dynamic';
+
 export default function AdminPage() {
   const { projects, addProject, updateProject, deleteProject, isInitialized } = useProjects();
   const [projectFormOpen, setProjectFormOpen] = React.useState(false);

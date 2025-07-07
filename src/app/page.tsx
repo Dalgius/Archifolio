@@ -8,6 +8,8 @@ import Link from 'next/link';
 import { FileText } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
+export const dynamic = 'force-dynamic';
+
 export default function PortfolioPage() {
   const { projects, isInitialized } = useProjects();
   const publicProjects = projects.filter(project => project.isPublic);

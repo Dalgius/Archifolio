@@ -13,6 +13,8 @@ import { it } from 'date-fns/locale';
 import { useProjects } from '@/hooks/use-projects';
 import { Skeleton } from '@/components/ui/skeleton';
 
+export const dynamic = 'force-dynamic';
+
 export default function ProjectPage({ params }: { params: { id: string } }) {
   const { projects, isInitialized } = useProjects();
 
