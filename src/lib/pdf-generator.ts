@@ -1,4 +1,3 @@
-
 'use client';
 
 import { jsPDF } from "jspdf";
@@ -108,11 +107,13 @@ export async function generatePortfolioPDF(projects: Project[]) {
         doc.setFontSize(9);
         doc.setTextColor(80, 80, 80);
         
-        const presentString = "presente";
-        const endDateFormatted = format(parseISO(project.endDate), 'MM/yyyy');
-        const isPresent = new Date(project.endDate) > new Date();
-        
-        const dateString = `${format(parseISO(project.startDate), 'MM/yyyy')} - ${isPresent ? presentString : endDateFormatted}`;
+        let dateString: string;
+        if (project.status === 'In Corso') {
+            dateString = `${format(parseISO(project.startDate), 'MM/yyyy')} - in corso`;
+        } else {
+            const endDateFormatted = format(parseISO(project.endDate), 'MM/yyyy');
+            dateString = `${format(parseISO(project.startDate), 'MM/yyyy')} - ${endDateFormatted}`;
+        }
 
         const locationDate = `${project.location} ${dateString}`;
         doc.text(locationDate, textX, textY);
