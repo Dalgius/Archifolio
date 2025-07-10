@@ -4,6 +4,8 @@
 import { jsPDF } from "jspdf";
 import type { Project } from "@/types";
 import { format, parseISO } from 'date-fns';
+import { it } from 'date-fns/locale';
+
 
 export type PdfLayout = "Completo" | "Compatto" | "Solo Testo";
 
@@ -29,6 +31,7 @@ class PdfDocument {
     contentWidth: number;
     y: number;
     pageNumber: number;
+    projectCounter: number;
 
     constructor() {
         this.doc = new jsPDF('p', 'mm', 'a4');
@@ -38,40 +41,31 @@ class PdfDocument {
         this.contentWidth = this.pageWidth - this.margin * 2;
         this.y = 0;
         this.pageNumber = 1;
+        this.projectCounter = 0;
     }
 
     startPage() {
-        this.y = this.margin + 5;
-        this.drawHeader();
-        this.y += 15;
-    }
-
-    drawHeader() {
-        const headerY = this.margin + 5;
-        this.doc.setDrawColor(119, 139, 159); // Muted blue
-        this.doc.setLineWidth(0.8);
-        this.doc.line(this.margin, headerY, this.pageWidth - this.margin, headerY);
-        this.doc.setFontSize(10);
-        this.doc.setTextColor(100);
-        this.doc.text(`architettura ${this.pageNumber}`, this.pageWidth - this.margin, headerY - 2, { align: 'right' });
+        this.y = this.margin;
+        this.projectCounter = 0;
     }
 
     drawFooter() {
-        const footerY = this.pageHeight - this.margin + 8;
-        this.doc.setDrawColor(0, 0, 0); // black line
-        this.doc.setLineWidth(0.2);
-        this.doc.line(this.margin, footerY, this.pageWidth - this.margin, footerY);
+        const footerY = this.pageHeight - this.margin / 2;
         this.doc.setFontSize(9);
         this.doc.setTextColor(150);
-        this.doc.text("GIUSEPPE D'ALESSIO ARCHITETTO", this.pageWidth - this.margin, footerY + 4, { align: 'right' });
+        this.doc.text(String(this.pageNumber), this.pageWidth / 2, footerY, { align: 'center' });
     }
 
-    checkNewPage(requiredHeight: number) {
-        if (this.y + requiredHeight > this.pageHeight - this.margin - 15) {
+    checkNewPage(requiredHeight: number, projectsPerPage?: number) {
+        const needsNewPageByCount = projectsPerPage && this.projectCounter >= projectsPerPage;
+        const needsNewPageByHeight = this.y + requiredHeight > this.pageHeight - this.margin;
+
+        if (needsNewPageByCount || needsNewPageByHeight) {
             this.drawFooter();
             this.doc.addPage();
             this.pageNumber++;
             this.startPage();
+            // No header in the new designs
         }
     }
 
@@ -82,11 +76,13 @@ class PdfDocument {
 }
 
 const addCompletoLayout = (pdf: PdfDocument, project: Project & { imageData: string | null }) => {
-    const projectBlockHeight = 70;
-    pdf.checkNewPage(projectBlockHeight);
+    const projectBlockHeight = (pdf.pageHeight - pdf.margin * 2) / 3;
+    pdf.checkNewPage(projectBlockHeight, 3);
+    
+    const currentY = pdf.y + (pdf.projectCounter * projectBlockHeight);
 
     const imageX = pdf.margin;
-    const imageY = pdf.y;
+    const imageY = currentY;
     const imageWidth = 70;
     const imageHeight = 52.5;
 
@@ -135,7 +131,7 @@ const addCompletoLayout = (pdf: PdfDocument, project: Project & { imageData: str
     pdf.doc.setTextColor(120, 120, 120);
 
     const addWrappedDetail = (label: string, value: string) => {
-        if (textY < pdf.y + imageHeight) {
+         if (textY < currentY + imageHeight) {
             const detailLines = pdf.doc.splitTextToSize(`${label}: ${value}`, textWidth);
             pdf.doc.text(detailLines, textX, textY);
             textY += detailLines.length * 5;
@@ -148,18 +144,23 @@ const addCompletoLayout = (pdf: PdfDocument, project: Project & { imageData: str
     const formattedAmount = new Intl.NumberFormat('it-IT', { style: 'currency', 'currency': 'EUR' }).format(project.amount);
     addWrappedDetail('Importo', formattedAmount);
     addWrappedDetail('Stato', project.status);
-
-    pdf.y += projectBlockHeight;
+    
+    pdf.projectCounter++;
+    if (pdf.projectCounter < 3) {
+      pdf.y = currentY + projectBlockHeight;
+    }
 };
 
 const addCompattoLayout = (pdf: PdfDocument, project: Project & { imageData: string | null }) => {
-    const projectBlockHeight = 35;
-    pdf.checkNewPage(projectBlockHeight);
+    const projectBlockHeight = (pdf.pageHeight - pdf.margin * 2) / 6;
+    pdf.checkNewPage(projectBlockHeight, 6);
+
+    const currentY = pdf.y + (pdf.projectCounter * projectBlockHeight);
 
     const imageX = pdf.margin;
-    const imageY = pdf.y;
-    const imageWidth = 20;
-    const imageHeight = 15;
+    const imageY = currentY;
+    const imageWidth = 35;
+    const imageHeight = 26.25;
 
     if (project.imageData) {
         try {
@@ -183,7 +184,7 @@ const addCompattoLayout = (pdf: PdfDocument, project: Project & { imageData: str
     pdf.doc.setTextColor(50, 50, 50);
     const titleLines = pdf.doc.splitTextToSize(project.name.toUpperCase(), textWidth);
     pdf.doc.text(titleLines, textX, textY);
-    textY += (titleLines.length * 3.5) + 1;
+    textY += (titleLines.length * 3.5) + 2;
     
     pdf.doc.setFont("helvetica", "normal");
     pdf.doc.setFontSize(8);
@@ -203,7 +204,7 @@ const addCompattoLayout = (pdf: PdfDocument, project: Project & { imageData: str
     textY += 4;
     
     const addDetailLine = (label: string, value: string) => {
-        if (textY < pdf.y + projectBlockHeight - 5) { // prevent overflow
+        if (textY < currentY + projectBlockHeight - 5) {
             const line = `${label}: ${value}`;
             pdf.doc.text(line, textX, textY, { maxWidth: textWidth });
             textY += 4;
@@ -212,63 +213,59 @@ const addCompattoLayout = (pdf: PdfDocument, project: Project & { imageData: str
     
     addDetailLine('Committente', project.client);
     addDetailLine('Prestazione', project.service);
-    const formattedAmount = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(project.amount);
-    addDetailLine('Importo lavori', formattedAmount);
-
-    pdf.y += projectBlockHeight;
-    pdf.doc.setDrawColor(220, 220, 220);
-    pdf.doc.setLineWidth(0.2);
-    pdf.doc.line(pdf.margin, pdf.y - (projectBlockHeight / 2) + 10, pdf.pageWidth - pdf.margin, pdf.y - (projectBlockHeight / 2) + 10);
+    
+    pdf.projectCounter++;
+     if (pdf.projectCounter < 6) {
+        pdf.doc.setDrawColor(220, 220, 220);
+        pdf.doc.setLineWidth(0.2);
+        pdf.doc.line(pdf.margin, currentY + projectBlockHeight - 5, pdf.pageWidth - pdf.margin, currentY + projectBlockHeight - 5);
+        pdf.y = currentY + projectBlockHeight;
+    }
 };
 
 const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
-    const projectBlockHeight = 30;
-    pdf.checkNewPage(projectBlockHeight);
+    const leftColX = pdf.margin;
+    const rightColX = pdf.margin + 50;
+    const leftColWidth = 45;
+    const rightColWidth = pdf.contentWidth - leftColWidth - 5;
+    const lineHeight = 4;
+    const sectionSpacing = 8;
     
-    let textY = pdf.y;
-    const textX = pdf.margin;
-    const textWidth = pdf.contentWidth;
-
-    pdf.doc.setFont("helvetica", "bold");
     pdf.doc.setFontSize(9);
-    pdf.doc.setTextColor(50, 50, 50);
-    const titleLines = pdf.doc.splitTextToSize(project.name.toUpperCase(), textWidth);
-    pdf.doc.text(titleLines, textX, textY);
-    textY += (titleLines.length * 3.5) + 1;
-    
-    pdf.doc.setFont("helvetica", "normal");
-    pdf.doc.setFontSize(8);
-    pdf.doc.setTextColor(100, 100, 100);
 
-    let dateString: string;
-    const startDateFormatted = format(parseISO(project.startDate), 'MM/yyyy');
-    if (project.status === 'In Corso') {
-        dateString = `${startDateFormatted} - in corso`;
-    } else {
-        const endDateFormatted = format(parseISO(project.endDate), 'MM/yyyy');
-        dateString = startDateFormatted === endDateFormatted ? startDateFormatted : `${startDateFormatted} - ${endDateFormatted}`;
-    }
-    const locationDate = `${project.location} ${dateString}`;
-    pdf.doc.text(locationDate, textX, textY);
-    textY += 4;
+    const addEntry = (label: string, value: string) => {
+        pdf.doc.setFont('helvetica', 'bold');
+        pdf.doc.text(`• ${label}`, leftColX, pdf.y);
 
-    const addDetailLine = (label: string, value: string) => {
-         if (textY < pdf.y + projectBlockHeight - 5) {
-            const line = `${label}: ${value}`;
-            pdf.doc.text(line, textX, textY, { maxWidth: textWidth });
-            textY += 4;
-        }
+        pdf.doc.setFont('helvetica', 'normal');
+        const valueLines = pdf.doc.splitTextToSize(value, rightColWidth);
+        const requiredHeight = valueLines.length * lineHeight;
+        
+        pdf.checkNewPage(requiredHeight); // Check before printing
+        
+        pdf.doc.text(valueLines, rightColX, pdf.y);
+        pdf.y += requiredHeight;
     };
     
-    addDetailLine('Committente', project.client);
-    addDetailLine('Prestazione', project.service);
-    const formattedAmount = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(project.amount);
-    addDetailLine('Importo lavori', formattedAmount);
+    const dateFormatted = `da ${format(parseISO(project.startDate), 'MMMM yyyy', { locale: it })} a ${format(parseISO(project.endDate), 'MMMM yyyy', { locale: it })}`;
+
+    // Estimate height for the whole block to check for page break before starting
+    const clientLines = pdf.doc.splitTextToSize(project.client, rightColWidth);
+    const nameLines = pdf.doc.splitTextToSize(project.name, rightColWidth);
+    const serviceLines = pdf.doc.splitTextToSize(project.service, rightColWidth);
+    const estimatedHeight = (clientLines.length + nameLines.length + serviceLines.length + 1) * lineHeight + sectionSpacing;
     
-    pdf.y += projectBlockHeight;
-    pdf.doc.setDrawColor(220, 220, 220);
-    pdf.doc.setLineWidth(0.2);
-    pdf.doc.line(pdf.margin, pdf.y - (projectBlockHeight / 2) + 8, pdf.pageWidth - pdf.margin, pdf.y - (projectBlockHeight / 2) + 8);
+    pdf.checkNewPage(estimatedHeight);
+
+    addEntry('Date', dateFormatted);
+    pdf.y += lineHeight / 2;
+    addEntry('Nome e tipo ente', project.client);
+    pdf.y += lineHeight / 2;
+    addEntry('Titolo del progetto', project.name);
+    pdf.y += lineHeight / 2;
+    addEntry('Tipo di attività', project.service);
+    
+    pdf.y += sectionSpacing;
 };
 
 
@@ -290,26 +287,14 @@ export async function generatePortfolioPDF(projects: Project[], layout: PdfLayou
         : projects.map(p => ({...p, imageData: null}));
 
     pdf.startPage();
-
-    if (layout === "Compatto" || layout === "Solo Testo") {
-        pdf.doc.setFont("helvetica", "bold");
-        pdf.doc.setFontSize(11);
-        pdf.doc.setTextColor(85, 85, 85);
-        pdf.doc.text("ENTI PUBBLICI E PRIVATI", pdf.margin, pdf.y);
-        pdf.y += 8;
-        pdf.doc.setDrawColor(85, 85, 85);
-        pdf.doc.setLineWidth(0.4);
-        pdf.doc.line(pdf.margin, pdf.y, pdf.margin + 40, pdf.y);
-        pdf.y += 8;
-    }
-
+    
     for (const project of projectsWithImageData) {
         switch (layout) {
             case "Completo":
-                addCompletoLayout(pdf, project);
+                addCompletoLayout(pdf, project as Project & { imageData: string | null });
                 break;
             case "Compatto":
-                addCompattoLayout(pdf, project);
+                addCompattoLayout(pdf, project as Project & { imageData: string | null });
                 break;
             case "Solo Testo":
                 addSoloTestoLayout(pdf, project);
