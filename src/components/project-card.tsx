@@ -2,7 +2,7 @@
 "use client";
 
 import Image from "next/image";
-import { Edit, MoreVertical, Trash2, Eye, EyeOff } from "lucide-react";
+import { Edit, MoreVertical, Trash2, Eye, EyeOff, MapPin } from "lucide-react";
 import type { Project } from "@/types";
 import {
   Card,
@@ -72,7 +72,7 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
         </CardHeader>
         <CardContent className="p-4 flex-grow flex flex-col">
           <div className="flex items-start justify-between">
-            <CardTitle className="mb-2 text-lg font-bold leading-tight font-headline pr-2">
+            <CardTitle className="text-lg font-bold leading-tight font-headline pr-2">
               {project.name}
             </CardTitle>
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -93,7 +93,11 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
                 </Badge>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground line-clamp-2 flex-grow mt-2">
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1 mb-2">
+            <MapPin className="h-3.5 w-3.5" />
+            <span>{project.location}</span>
+          </div>
+          <p className="text-sm text-muted-foreground line-clamp-2 flex-grow">
             {project.description || ''}
           </p>
         </CardContent>
