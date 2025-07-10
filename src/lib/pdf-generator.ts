@@ -79,7 +79,7 @@ const addCompletoLayout = (pdf: PdfDocument, project: Project & { imageData: str
     const projectBlockHeight = (pdf.pageHeight - pdf.margin * 2) / 3;
     pdf.checkNewPage(projectBlockHeight, 3);
     
-    const currentY = pdf.y + (pdf.projectCounter * projectBlockHeight);
+    const currentY = pdf.y;
 
     const imageX = pdf.margin;
     const imageY = currentY;
@@ -146,16 +146,14 @@ const addCompletoLayout = (pdf: PdfDocument, project: Project & { imageData: str
     addWrappedDetail('Stato', project.status);
     
     pdf.projectCounter++;
-    if (pdf.projectCounter < 3) {
-      pdf.y = currentY + projectBlockHeight;
-    }
+    pdf.y += projectBlockHeight;
 };
 
 const addCompattoLayout = (pdf: PdfDocument, project: Project & { imageData: string | null }) => {
     const projectBlockHeight = (pdf.pageHeight - pdf.margin * 2) / 6;
     pdf.checkNewPage(projectBlockHeight, 6);
 
-    const currentY = pdf.y + (pdf.projectCounter * projectBlockHeight);
+    const currentY = pdf.y;
 
     const imageX = pdf.margin;
     const imageY = currentY;
@@ -215,12 +213,10 @@ const addCompattoLayout = (pdf: PdfDocument, project: Project & { imageData: str
     addDetailLine('Prestazione', project.service);
     
     pdf.projectCounter++;
-     if (pdf.projectCounter < 6) {
-        pdf.doc.setDrawColor(220, 220, 220);
-        pdf.doc.setLineWidth(0.2);
-        pdf.doc.line(pdf.margin, currentY + projectBlockHeight - 5, pdf.pageWidth - pdf.margin, currentY + projectBlockHeight - 5);
-        pdf.y = currentY + projectBlockHeight;
-    }
+    pdf.doc.setDrawColor(220, 220, 220);
+    pdf.doc.setLineWidth(0.2);
+    pdf.doc.line(pdf.margin, currentY + projectBlockHeight - 5, pdf.pageWidth - pdf.margin, currentY + projectBlockHeight - 5);
+    pdf.y += projectBlockHeight;
 };
 
 const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
@@ -233,6 +229,7 @@ const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
     const sectionSpacing = 8;
     
     pdf.doc.setFontSize(9);
+    pdf.doc.setTextColor(0, 0, 0); // Set text color to black
     
     // Store original Y position to draw the line later
     const startY = pdf.y;
@@ -240,7 +237,6 @@ const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
     const addEntry = (label: string, value: string) => {
         pdf.doc.setFont('helvetica', 'bold');
         const labelLines = pdf.doc.splitTextToSize(`• ${label}`, leftColWidth);
-        pdf.doc.text(labelLines, leftColX, pdf.y);
 
         pdf.doc.setFont('helvetica', 'normal');
         const valueLines = pdf.doc.splitTextToSize(value, rightColWidth);
@@ -248,6 +244,13 @@ const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
         
         pdf.checkNewPage(requiredHeight);
         
+        // We might have a new page, so we need to set color again
+        pdf.doc.setTextColor(0, 0, 0);
+        
+        pdf.doc.setFont('helvetica', 'bold');
+        pdf.doc.text(labelLines, leftColX, pdf.y);
+
+        pdf.doc.setFont('helvetica', 'normal');
         pdf.doc.text(valueLines, rightColX, pdf.y);
         pdf.y += requiredHeight;
     };
