@@ -32,6 +32,8 @@ class PdfDocument {
     y: number;
     pageNumber: number;
     projectCounter: number;
+    pageStartY: number;
+    pageEndY: number;
 
     constructor() {
         this.doc = new jsPDF('p', 'mm', 'a4');
@@ -42,11 +44,15 @@ class PdfDocument {
         this.y = 0;
         this.pageNumber = 1;
         this.projectCounter = 0;
+        this.pageStartY = this.margin;
+        this.pageEndY = this.margin;
     }
 
     startPage() {
         this.y = this.margin;
         this.projectCounter = 0;
+        this.pageStartY = this.margin;
+        this.pageEndY = this.margin;
     }
 
     drawFooter() {
@@ -65,7 +71,9 @@ class PdfDocument {
             this.doc.addPage();
             this.pageNumber++;
             this.startPage();
+            return true;
         }
+        return false;
     }
 
     save(filename: string) {
@@ -219,13 +227,14 @@ const addCompattoLayout = (pdf: PdfDocument, project: Project & { imageData: str
 };
 
 const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
-    pdf.doc.setTextColor(0, 0, 0); // Ensure text is black
+    pdf.doc.setTextColor(0, 0, 0);
 
     const leftColWidth = 55;
     const rightColX = pdf.margin + leftColWidth + 5;
     const rightColWidth = pdf.contentWidth - leftColWidth - 5;
-    const lineHeight = 4.5;
-    const entrySpacing = 2;
+    const lineHeight = 3.5;
+    const entrySpacing = 0;
+    const blockSpacing = 2;
 
     const dateFormatted = `da ${format(parseISO(project.startDate), 'MMMM yyyy', { locale: it })} a ${format(parseISO(project.endDate), 'MMMM yyyy', { locale: it })}`;
 
@@ -241,36 +250,28 @@ const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
         const valueLines = pdf.doc.splitTextToSize(entry.value, rightColWidth);
         requiredHeight += valueLines.length * lineHeight + entrySpacing;
     }
-    requiredHeight += 8; // Extra spacing after block
+    requiredHeight += blockSpacing;
 
     pdf.checkNewPage(requiredHeight);
-
-    const blockStartY = pdf.y;
+    
+    pdf.doc.setTextColor(0, 0, 0);
 
     for (const entry of entries) {
-        pdf.doc.setTextColor(0, 0, 0);
-
         const valueLines = pdf.doc.splitTextToSize(entry.value, rightColWidth);
         const blockHeight = valueLines.length * lineHeight;
 
         pdf.doc.setFont("helvetica", "bold");
         pdf.doc.setFontSize(10);
-        pdf.doc.text(entry.label, pdf.margin, pdf.y);
+        pdf.doc.text(entry.label, pdf.margin, pdf.y, { baseline: 'top' });
         
         pdf.doc.setFont("helvetica", "normal");
         pdf.doc.setFontSize(10);
-        pdf.doc.text(valueLines, rightColX, pdf.y);
+        pdf.doc.text(valueLines, rightColX, pdf.y, { baseline: 'top' });
         
         pdf.y += blockHeight + entrySpacing;
     }
     
-    const blockEndY = pdf.y - entrySpacing;
-
-    pdf.doc.setDrawColor(200, 200, 200);
-    pdf.doc.setLineWidth(0.2);
-    pdf.doc.line(pdf.margin + leftColWidth + 2, blockStartY - 2, pdf.margin + leftColWidth + 2, blockEndY);
-
-    pdf.y += 8; // Spacing after the project block
+    pdf.y += blockSpacing;
 };
 
 
