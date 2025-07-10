@@ -32,8 +32,6 @@ class PdfDocument {
     y: number;
     pageNumber: number;
     projectCounter: number;
-    pageStartY: number;
-    pageEndY: number;
 
     constructor() {
         this.doc = new jsPDF('p', 'mm', 'a4');
@@ -44,15 +42,11 @@ class PdfDocument {
         this.y = 0;
         this.pageNumber = 1;
         this.projectCounter = 0;
-        this.pageStartY = this.margin;
-        this.pageEndY = this.margin;
     }
 
     startPage() {
         this.y = this.margin;
         this.projectCounter = 0;
-        this.pageStartY = this.margin;
-        this.pageEndY = this.margin;
     }
 
     drawFooter() {
@@ -62,11 +56,8 @@ class PdfDocument {
         this.doc.text(String(this.pageNumber), this.pageWidth / 2, footerY, { align: 'center' });
     }
 
-    checkNewPage(requiredHeight: number, projectsPerPage?: number) {
-        const needsNewPageByCount = projectsPerPage && this.projectCounter >= projectsPerPage;
-        const needsNewPageByHeight = this.y + requiredHeight > this.pageHeight - this.margin;
-
-        if (needsNewPageByCount || needsNewPageByHeight) {
+    checkNewPage(requiredHeight: number) {
+        if (this.y + requiredHeight > this.pageHeight - this.margin) {
             this.drawFooter();
             this.doc.addPage();
             this.pageNumber++;
@@ -84,7 +75,13 @@ class PdfDocument {
 
 const addCompletoLayout = (pdf: PdfDocument, project: Project & { imageData: string | null }) => {
     const projectBlockHeight = (pdf.pageHeight - pdf.margin * 2) / 3;
-    pdf.checkNewPage(projectBlockHeight, 3);
+    pdf.checkNewPage(projectBlockHeight);
+    if(pdf.projectCounter > 0 && pdf.projectCounter % 3 === 0) {
+        pdf.drawFooter();
+        pdf.doc.addPage();
+        pdf.pageNumber++;
+        pdf.startPage();
+    }
     
     const currentY = pdf.y;
 
@@ -158,7 +155,13 @@ const addCompletoLayout = (pdf: PdfDocument, project: Project & { imageData: str
 
 const addCompattoLayout = (pdf: PdfDocument, project: Project & { imageData: string | null }) => {
     const projectBlockHeight = (pdf.pageHeight - pdf.margin * 2) / 6;
-    pdf.checkNewPage(projectBlockHeight, 6);
+    pdf.checkNewPage(projectBlockHeight);
+     if(pdf.projectCounter > 0 && pdf.projectCounter % 6 === 0) {
+        pdf.drawFooter();
+        pdf.doc.addPage();
+        pdf.pageNumber++;
+        pdf.startPage();
+    }
 
     const currentY = pdf.y;
 
@@ -230,11 +233,13 @@ const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
     pdf.doc.setTextColor(0, 0, 0);
 
     const leftColWidth = 55;
-    const rightColX = pdf.margin + leftColWidth + 5;
-    const rightColWidth = pdf.contentWidth - leftColWidth - 5;
-    const lineHeight = 3.5;
-    const entrySpacing = 0;
-    const blockSpacing = 2;
+    const separatorX = pdf.margin + leftColWidth + 2.5;
+    const rightColX = separatorX + 2.5;
+    const rightColWidth = pdf.pageWidth - rightColX - pdf.margin;
+    
+    const lineHeight = 3.8;
+    const entrySpacing = 0.5;
+    const blockSpacing = 3;
 
     const dateFormatted = `da ${format(parseISO(project.startDate), 'MMMM yyyy', { locale: it })} a ${format(parseISO(project.endDate), 'MMMM yyyy', { locale: it })}`;
 
@@ -245,33 +250,44 @@ const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
         { label: '• Tipo di attività', value: project.service }
     ];
 
-    let requiredHeight = 0;
+    let totalBlockHeight = 0;
     for (const entry of entries) {
         const valueLines = pdf.doc.splitTextToSize(entry.value, rightColWidth);
-        requiredHeight += valueLines.length * lineHeight + entrySpacing;
+        const labelLines = pdf.doc.splitTextToSize(entry.label, leftColWidth);
+        totalBlockHeight += Math.max(valueLines.length, labelLines.length) * lineHeight + entrySpacing;
     }
-    requiredHeight += blockSpacing;
+    totalBlockHeight += blockSpacing;
 
-    pdf.checkNewPage(requiredHeight);
+    pdf.checkNewPage(totalBlockHeight);
+
+    const startY = pdf.y;
+    let currentY = pdf.y;
     
     pdf.doc.setTextColor(0, 0, 0);
 
     for (const entry of entries) {
         const valueLines = pdf.doc.splitTextToSize(entry.value, rightColWidth);
-        const blockHeight = valueLines.length * lineHeight;
+        const labelLines = pdf.doc.splitTextToSize(entry.label, leftColWidth);
+        const blockHeight = Math.max(valueLines.length, labelLines.length) * lineHeight;
 
         pdf.doc.setFont("helvetica", "bold");
         pdf.doc.setFontSize(10);
-        pdf.doc.text(entry.label, pdf.margin, pdf.y, { baseline: 'top' });
+        pdf.doc.text(entry.label, pdf.margin, currentY, { baseline: 'top' });
         
         pdf.doc.setFont("helvetica", "normal");
         pdf.doc.setFontSize(10);
-        pdf.doc.text(valueLines, rightColX, pdf.y, { baseline: 'top' });
+        pdf.doc.text(valueLines, rightColX, currentY, { baseline: 'top' });
         
-        pdf.y += blockHeight + entrySpacing;
+        currentY += blockHeight + entrySpacing;
     }
+
+    const endY = currentY;
     
-    pdf.y += blockSpacing;
+    pdf.doc.setDrawColor(200, 200, 200);
+    pdf.doc.setLineWidth(0.2);
+    pdf.doc.line(separatorX, startY, separatorX, endY - entrySpacing);
+    
+    pdf.y = endY + blockSpacing;
 };
 
 
