@@ -65,7 +65,6 @@ class PdfDocument {
             this.doc.addPage();
             this.pageNumber++;
             this.startPage();
-            // No header in the new designs
         }
     }
 
@@ -220,71 +219,61 @@ const addCompattoLayout = (pdf: PdfDocument, project: Project & { imageData: str
 };
 
 const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
+    const startY = pdf.y;
+
+    const leftColWidth = 55;
+    const rightColX = pdf.margin + leftColWidth + 5;
+    const rightColWidth = pdf.contentWidth - leftColWidth - 5;
     const lineHeight = 5;
-    const sectionSpacing = 10;
 
-    const addBulletedEntry = (label: string, value: string) => {
-        pdf.doc.setFont("helvetica", "bold");
-        pdf.doc.text(`• ${label}:`, pdf.margin, pdf.y);
-        
-        pdf.doc.setFont("helvetica", "normal");
-        const valueLines = pdf.doc.splitTextToSize(value, pdf.contentWidth - 10);
-        const requiredHeight = valueLines.length * lineHeight;
-        
-        pdf.checkNewPage(requiredHeight + lineHeight);
-        
-        pdf.doc.setTextColor(0, 0, 0);
-
-        pdf.doc.setFont("helvetica", "bold");
-        pdf.doc.text(`• ${label}:`, pdf.margin, pdf.y);
-        
-        pdf.doc.setFont("helvetica", "normal");
-        pdf.doc.text(valueLines, pdf.margin + 3, pdf.y + lineHeight);
-        pdf.y += requiredHeight + lineHeight;
-    };
-    
-    const addSimpleBulletedEntry = (label: string, value: string) => {
-        const fullText = `• ${label}: ${value}`;
-        const textLines = pdf.doc.splitTextToSize(fullText, pdf.contentWidth);
-        const requiredHeight = textLines.length * lineHeight;
-        
-        pdf.checkNewPage(requiredHeight);
-        pdf.doc.setTextColor(0,0,0);
-        
-        pdf.doc.text(textLines, pdf.margin, pdf.y);
-        pdf.y += requiredHeight;
-    };
-
-    // Calculate total height to check for new page
     const dateFormatted = `da ${format(parseISO(project.startDate), 'MMMM yyyy', { locale: it })} a ${format(parseISO(project.endDate), 'MMMM yyyy', { locale: it })}`;
-    const line1 = `• Date: ${dateFormatted}`;
-    const line2 = `• Nome e tipo ente: ${project.client}`;
-    const line3 = `• Titolo del progetto: ${project.name}`;
-    const line4 = `• Tipo di attività: ${project.service}`;
 
-    const estimateLines = (text: string) => pdf.doc.splitTextToSize(text, pdf.contentWidth).length;
-    const totalEstimatedHeight = (estimateLines(line1) + estimateLines(line2) + estimateLines(line3) + estimateLines(line4)) * lineHeight + sectionSpacing;
-    
-    pdf.checkNewPage(totalEstimatedHeight);
-    
-    pdf.doc.setFontSize(10);
-    pdf.doc.setTextColor(0,0,0);
-    pdf.doc.setFont("helvetica", "normal");
+    const entries = [
+        { label: '• Date', value: dateFormatted },
+        { label: '• Nome e tipo ente', value: project.client },
+        { label: '• Titolo del progetto', value: project.name },
+        { label: '• Tipo di attività', value: project.service }
+    ];
 
-    addSimpleBulletedEntry('Date', dateFormatted);
-    pdf.y += lineHeight / 2;
-    addSimpleBulletedEntry('Nome e tipo ente', project.client);
-    pdf.y += lineHeight / 2;
-    addSimpleBulletedEntry('Titolo del progetto', project.name);
-    pdf.y += lineHeight / 2;
-    addSimpleBulletedEntry('Tipo di attività', project.service);
+    let requiredHeight = 0;
+    for (const entry of entries) {
+        const valueLines = pdf.doc.splitTextToSize(entry.value, rightColWidth);
+        requiredHeight += valueLines.length * lineHeight + 2;
+    }
+    requiredHeight += 10; // Extra spacing
 
-    pdf.y += sectionSpacing;
+    pdf.checkNewPage(requiredHeight);
+
+    // FIX: Ensure text color is black at the start of the block
+    pdf.doc.setTextColor(0, 0, 0);
+
+    const blockStartY = pdf.y;
+
+    for (const entry of entries) {
+        pdf.doc.setFont("helvetica", "bold");
+        pdf.doc.text(entry.label, pdf.margin, pdf.y);
+        
+        pdf.doc.setFont("helvetica", "normal");
+        const valueLines = pdf.doc.splitTextToSize(entry.value, rightColWidth);
+        pdf.doc.text(valueLines, rightColX, pdf.y);
+        
+        pdf.y += valueLines.length * lineHeight + 2; // Spacing after each entry
+    }
+
+    const blockEndY = pdf.y;
+
+    // Draw vertical separator line for this block
+    pdf.doc.setDrawColor(200, 200, 200);
+    pdf.doc.setLineWidth(0.2);
+    pdf.doc.line(pdf.margin + leftColWidth + 2, blockStartY - 2, pdf.margin + leftColWidth + 2, blockEndY - 2);
+
+    pdf.y += 10; // Spacing after the project block
 };
 
 
 export async function generatePortfolioPDF(projects: Project[], layout: PdfLayout) {
-    const pdf = new PdfDocument();
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfDoc = new PdfDocument();
     
     const projectsWithImageData = layout !== "Solo Testo"
         ? await Promise.all(
@@ -300,21 +289,21 @@ export async function generatePortfolioPDF(projects: Project[], layout: PdfLayou
           )
         : projects.map(p => ({...p, imageData: null}));
 
-    pdf.startPage();
+    pdfDoc.startPage();
     
     for (const project of projectsWithImageData) {
         switch (layout) {
             case "Completo":
-                addCompletoLayout(pdf, project as Project & { imageData: string | null });
+                addCompletoLayout(pdfDoc, project as Project & { imageData: string | null });
                 break;
             case "Compatto":
-                addCompattoLayout(pdf, project as Project & { imageData: string | null });
+                addCompattoLayout(pdfDoc, project as Project & { imageData: string | null });
                 break;
             case "Solo Testo":
-                addSoloTestoLayout(pdf, project);
+                addSoloTestoLayout(pdfDoc, project);
                 break;
         }
     }
     
-    pdf.save(`Portfolio-Archifolio-${layout}.pdf`);
+    pdfDoc.save(`Portfolio-Archifolio-${layout}.pdf`);
 }
