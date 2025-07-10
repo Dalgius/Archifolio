@@ -355,10 +355,8 @@ export async function seedProjects() {
     const batch = writeBatch(db);
 
     projectsData.forEach(project => {
-        // Firestore generates ID automatically when using collection().doc()
-        const docRef = doc(projectsCollectionRef); 
+        const docRef = doc(projectsCollectionRef);
         
-        // Ensure all fields from the Project type are present
         const projectToSave: Omit<Project, 'id'> = {
             name: project.name || "",
             image: project.image || "https://placehold.co/600x400.png",
