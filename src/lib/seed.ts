@@ -1,7 +1,7 @@
 
 'use client';
 
-import { collection, writeBatch } from 'firebase/firestore';
+import { collection, doc, writeBatch } from 'firebase/firestore';
 import { db } from './firebase';
 import type { Project } from '@/types';
 
@@ -351,12 +351,12 @@ const projectsData: Omit<Project, 'id'>[] = [
 ];
 
 export async function seedProjects() {
-    const projectsCollection = collection(db, 'projects');
+    const projectsCollectionRef = collection(db, 'projects');
     const batch = writeBatch(db);
 
     projectsData.forEach(project => {
         // Firestore generates ID automatically when using collection().doc()
-        const docRef = collection(db, 'projects').doc(); 
+        const docRef = doc(projectsCollectionRef); 
         
         // Ensure all fields from the Project type are present
         const projectToSave: Omit<Project, 'id'> = {
