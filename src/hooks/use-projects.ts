@@ -17,15 +17,28 @@ export function useProjects() {
   // Load projects from Firestore on initial render
   React.useEffect(() => {
     const projectsCollection = collection(db, 'projects');
+    let isSeeding = false;
 
     const checkForSeed = async () => {
+      // Prevent multiple seeding calls
+      if (isSeeding || window.sessionStorage.getItem('seeded')) return;
+      isSeeding = true;
+
       const snapshot = await getDocs(projectsCollection);
       if (snapshot.empty) {
         console.log("Projects collection is empty. Seeding initial data...");
         toast({ title: "Configurazione iniziale...", description: "Caricamento dei progetti di esempio in corso." });
-        await seedProjects();
-        toast({ title: "Configurazione completata!", description: "I progetti di esempio sono stati caricati." });
+        try {
+          await seedProjects();
+          toast({ title: "Configurazione completata!", description: "I progetti di esempio sono stati caricati." });
+          window.sessionStorage.setItem('seeded', 'true');
+        } catch (error) {
+           toast({ variant: "destructive", title: "Errore di configurazione", description: "Impossibile caricare i progetti di esempio." });
+        }
+      } else {
+         window.sessionStorage.setItem('seeded', 'true');
       }
+      isSeeding = false;
     };
     
     checkForSeed();
@@ -108,3 +121,5 @@ export function useProjects() {
     deleteProject,
   };
 }
+
+    
