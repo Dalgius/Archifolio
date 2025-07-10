@@ -8,6 +8,7 @@ import { Button } from './ui/button';
 
 export function Header() {
     const pathname = usePathname();
+    const isPublicMode = process.env.NEXT_PUBLIC_BUILD_MODE === 'public';
 
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -20,9 +21,11 @@ export function Header() {
                     <Button variant="ghost" asChild>
                         <Link href="/">Progetti</Link>
                     </Button>
-                    <Button asChild>
-                        <Link href="/admin">Accesso Admin</Link>
-                    </Button>
+                    {!isPublicMode && (
+                        <Button asChild>
+                            <Link href="/admin">Accesso Admin</Link>
+                        </Button>
+                    )}
                 </nav>
             </div>
         </header>
