@@ -10,12 +10,16 @@ export function Header() {
     const pathname = usePathname();
 
     const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-        if (pathname === '/') {
-            e.preventDefault();
-            const projectsSection = document.getElementById('projects');
-            if (projectsSection) {
-                projectsSection.scrollIntoView({ behavior: 'smooth' });
-            }
+        // Se non siamo sulla homepage, lascia che il Link faccia il suo lavoro normale.
+        if (pathname !== '/') {
+            return;
+        }
+
+        // Se siamo sulla homepage, gestiamo lo scroll manualmente.
+        e.preventDefault();
+        const projectsSection = document.getElementById('projects');
+        if (projectsSection) {
+            projectsSection.scrollIntoView({ behavior: 'smooth' });
         }
     };
 
