@@ -220,66 +220,64 @@ const addCompattoLayout = (pdf: PdfDocument, project: Project & { imageData: str
 };
 
 const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
-    const leftColX = pdf.margin;
-    const rightColX = pdf.margin + 50;
-    const separatorX = rightColX - 2.5;
-    const leftColWidth = separatorX - leftColX - 2.5;
-    const rightColWidth = pdf.pageWidth - pdf.margin - rightColX;
-    const lineHeight = 4;
-    const sectionSpacing = 8;
-    
-    pdf.doc.setFontSize(9);
-    pdf.doc.setTextColor(0, 0, 0); // Set text color to black
-    
-    // Store original Y position to draw the line later
-    const startY = pdf.y;
+    const lineHeight = 5;
+    const sectionSpacing = 10;
 
-    const addEntry = (label: string, value: string) => {
-        pdf.doc.setFont('helvetica', 'bold');
-        const labelLines = pdf.doc.splitTextToSize(`• ${label}`, leftColWidth);
-
-        pdf.doc.setFont('helvetica', 'normal');
-        const valueLines = pdf.doc.splitTextToSize(value, rightColWidth);
-        const requiredHeight = Math.max(labelLines.length, valueLines.length) * lineHeight;
+    const addBulletedEntry = (label: string, value: string) => {
+        pdf.doc.setFont("helvetica", "bold");
+        pdf.doc.text(`• ${label}:`, pdf.margin, pdf.y);
         
-        pdf.checkNewPage(requiredHeight);
+        pdf.doc.setFont("helvetica", "normal");
+        const valueLines = pdf.doc.splitTextToSize(value, pdf.contentWidth - 10);
+        const requiredHeight = valueLines.length * lineHeight;
         
-        // We might have a new page, so we need to set color again
+        pdf.checkNewPage(requiredHeight + lineHeight);
+        
         pdf.doc.setTextColor(0, 0, 0);
-        
-        pdf.doc.setFont('helvetica', 'bold');
-        pdf.doc.text(labelLines, leftColX, pdf.y);
 
-        pdf.doc.setFont('helvetica', 'normal');
-        pdf.doc.text(valueLines, rightColX, pdf.y);
-        pdf.y += requiredHeight;
+        pdf.doc.setFont("helvetica", "bold");
+        pdf.doc.text(`• ${label}:`, pdf.margin, pdf.y);
+        
+        pdf.doc.setFont("helvetica", "normal");
+        pdf.doc.text(valueLines, pdf.margin + 3, pdf.y + lineHeight);
+        pdf.y += requiredHeight + lineHeight;
     };
     
+    const addSimpleBulletedEntry = (label: string, value: string) => {
+        const fullText = `• ${label}: ${value}`;
+        const textLines = pdf.doc.splitTextToSize(fullText, pdf.contentWidth);
+        const requiredHeight = textLines.length * lineHeight;
+        
+        pdf.checkNewPage(requiredHeight);
+        pdf.doc.setTextColor(0,0,0);
+        
+        pdf.doc.text(textLines, pdf.margin, pdf.y);
+        pdf.y += requiredHeight;
+    };
+
+    // Calculate total height to check for new page
     const dateFormatted = `da ${format(parseISO(project.startDate), 'MMMM yyyy', { locale: it })} a ${format(parseISO(project.endDate), 'MMMM yyyy', { locale: it })}`;
+    const line1 = `• Date: ${dateFormatted}`;
+    const line2 = `• Nome e tipo ente: ${project.client}`;
+    const line3 = `• Titolo del progetto: ${project.name}`;
+    const line4 = `• Tipo di attività: ${project.service}`;
 
-    const clientLines = pdf.doc.splitTextToSize(project.client, rightColWidth);
-    const nameLines = pdf.doc.splitTextToSize(project.name, rightColWidth);
-    const serviceLines = pdf.doc.splitTextToSize(project.service, rightColWidth);
-    const dateLines = pdf.doc.splitTextToSize(dateFormatted, rightColWidth);
-    const estimatedHeight = (clientLines.length + nameLines.length + serviceLines.length + dateLines.length + 3) * lineHeight + sectionSpacing;
+    const estimateLines = (text: string) => pdf.doc.splitTextToSize(text, pdf.contentWidth).length;
+    const totalEstimatedHeight = (estimateLines(line1) + estimateLines(line2) + estimateLines(line3) + estimateLines(line4)) * lineHeight + sectionSpacing;
+    
+    pdf.checkNewPage(totalEstimatedHeight);
+    
+    pdf.doc.setFontSize(10);
+    pdf.doc.setTextColor(0,0,0);
+    pdf.doc.setFont("helvetica", "normal");
 
-    pdf.checkNewPage(estimatedHeight);
-    
-    const blockStartY = pdf.y;
-
-    addEntry('Date', dateFormatted);
+    addSimpleBulletedEntry('Date', dateFormatted);
     pdf.y += lineHeight / 2;
-    addEntry('Nome e tipo ente', project.client);
+    addSimpleBulletedEntry('Nome e tipo ente', project.client);
     pdf.y += lineHeight / 2;
-    addEntry('Titolo del progetto', project.name);
+    addSimpleBulletedEntry('Titolo del progetto', project.name);
     pdf.y += lineHeight / 2;
-    addEntry('Tipo di attività', project.service);
-    
-    const blockEndY = pdf.y;
-    
-    pdf.doc.setDrawColor(200, 200, 200);
-    pdf.doc.setLineWidth(0.2);
-    pdf.doc.line(separatorX, blockStartY - (lineHeight / 2), separatorX, blockEndY - lineHeight);
+    addSimpleBulletedEntry('Tipo di attività', project.service);
 
     pdf.y += sectionSpacing;
 };
