@@ -17,29 +17,29 @@ export function useProjects() {
   // Load projects from Firestore on initial render
   React.useEffect(() => {
     const projectsCollection = collection(db, 'projects');
-    let isSeeding = false;
+    
+    // This flag prevents multiple simultaneous seeding attempts
+    let isCurrentlySeeding = false; 
 
     const checkForSeed = async () => {
-      // Prevent multiple seeding calls
-      if (isSeeding || window.sessionStorage.getItem('seeded')) return;
-      isSeeding = true;
+      // Prevent re-seeding if it's already in progress
+      if (isCurrentlySeeding) return;
+      isCurrentlySeeding = true;
 
-      const snapshot = await getDocs(projectsCollection);
-      if (snapshot.empty) {
-        console.log("Projects collection is empty. Seeding initial data...");
-        toast({ title: "Configurazione iniziale...", description: "Caricamento dei progetti di esempio in corso." });
-        try {
+      try {
+        const snapshot = await getDocs(projectsCollection);
+        if (snapshot.empty) {
+          console.log("Projects collection is empty. Seeding initial data...");
+          toast({ title: "Configurazione iniziale...", description: "Caricamento dei progetti di esempio in corso." });
           await seedProjects();
           toast({ title: "Configurazione completata!", description: "I progetti di esempio sono stati caricati." });
-          window.sessionStorage.setItem('seeded', 'true');
-        } catch (error) {
-           toast({ variant: "destructive", title: "Errore di configurazione", description: "Impossibile caricare i progetti di esempio." });
         }
+      } catch (error) {
+        console.error("Error during seeding check:", error);
+        toast({ variant: "destructive", title: "Errore di configurazione", description: "Impossibile caricare i progetti di esempio." });
+      } finally {
+        isCurrentlySeeding = false;
       }
-      // This flag should only be set if seeding was attempted or not needed.
-      // We no longer set it if the collection is just populated.
-      // The session storage prevents re-seeding within the same session.
-      isSeeding = false;
     };
     
     checkForSeed();
