@@ -97,9 +97,7 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
             <MapPin className="h-3.5 w-3.5" />
             <span>{project.location}</span>
           </div>
-          <p className="text-sm text-muted-foreground line-clamp-2 flex-grow">
-            {project.description || ''}
-          </p>
+          
         </CardContent>
       </Card>
   );
