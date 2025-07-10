@@ -9,20 +9,6 @@ import { Button } from './ui/button';
 export function Header() {
     const pathname = usePathname();
 
-    const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-        // Se non siamo sulla homepage, lascia che il Link faccia il suo lavoro normale.
-        if (pathname !== '/') {
-            return;
-        }
-
-        // Se siamo sulla homepage, gestiamo lo scroll manualmente.
-        e.preventDefault();
-        const projectsSection = document.getElementById('projects');
-        if (projectsSection) {
-            projectsSection.scrollIntoView({ behavior: 'smooth' });
-        }
-    };
-
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="container h-14 flex items-center justify-between">
@@ -32,7 +18,7 @@ export function Header() {
                 </Link>
                 <nav className="flex gap-2 items-center">
                     <Button variant="ghost" asChild>
-                        <Link href="/#projects" onClick={handleScroll}>Progetti</Link>
+                        <Link href="/">Progetti</Link>
                     </Button>
                     <Button asChild>
                         <Link href="/admin">Accesso Admin</Link>
