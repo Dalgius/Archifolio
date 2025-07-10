@@ -226,22 +226,27 @@ const addCompattoLayout = (pdf: PdfDocument, project: Project & { imageData: str
 const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
     const leftColX = pdf.margin;
     const rightColX = pdf.margin + 50;
-    const leftColWidth = 45;
-    const rightColWidth = pdf.contentWidth - leftColWidth - 5;
+    const separatorX = rightColX - 2.5;
+    const leftColWidth = separatorX - leftColX - 2.5;
+    const rightColWidth = pdf.pageWidth - pdf.margin - rightColX;
     const lineHeight = 4;
     const sectionSpacing = 8;
     
     pdf.doc.setFontSize(9);
+    
+    // Store original Y position to draw the line later
+    const startY = pdf.y;
 
     const addEntry = (label: string, value: string) => {
         pdf.doc.setFont('helvetica', 'bold');
-        pdf.doc.text(`• ${label}`, leftColX, pdf.y);
+        const labelLines = pdf.doc.splitTextToSize(`• ${label}`, leftColWidth);
+        pdf.doc.text(labelLines, leftColX, pdf.y);
 
         pdf.doc.setFont('helvetica', 'normal');
         const valueLines = pdf.doc.splitTextToSize(value, rightColWidth);
-        const requiredHeight = valueLines.length * lineHeight;
+        const requiredHeight = Math.max(labelLines.length, valueLines.length) * lineHeight;
         
-        pdf.checkNewPage(requiredHeight); // Check before printing
+        pdf.checkNewPage(requiredHeight);
         
         pdf.doc.text(valueLines, rightColX, pdf.y);
         pdf.y += requiredHeight;
@@ -249,13 +254,15 @@ const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
     
     const dateFormatted = `da ${format(parseISO(project.startDate), 'MMMM yyyy', { locale: it })} a ${format(parseISO(project.endDate), 'MMMM yyyy', { locale: it })}`;
 
-    // Estimate height for the whole block to check for page break before starting
     const clientLines = pdf.doc.splitTextToSize(project.client, rightColWidth);
     const nameLines = pdf.doc.splitTextToSize(project.name, rightColWidth);
     const serviceLines = pdf.doc.splitTextToSize(project.service, rightColWidth);
-    const estimatedHeight = (clientLines.length + nameLines.length + serviceLines.length + 1) * lineHeight + sectionSpacing;
-    
+    const dateLines = pdf.doc.splitTextToSize(dateFormatted, rightColWidth);
+    const estimatedHeight = (clientLines.length + nameLines.length + serviceLines.length + dateLines.length + 3) * lineHeight + sectionSpacing;
+
     pdf.checkNewPage(estimatedHeight);
+    
+    const blockStartY = pdf.y;
 
     addEntry('Date', dateFormatted);
     pdf.y += lineHeight / 2;
@@ -265,6 +272,12 @@ const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
     pdf.y += lineHeight / 2;
     addEntry('Tipo di attività', project.service);
     
+    const blockEndY = pdf.y;
+    
+    pdf.doc.setDrawColor(200, 200, 200);
+    pdf.doc.setLineWidth(0.2);
+    pdf.doc.line(separatorX, blockStartY - (lineHeight / 2), separatorX, blockEndY - lineHeight);
+
     pdf.y += sectionSpacing;
 };
 
