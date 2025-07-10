@@ -2,10 +2,11 @@
 'use client';
 
 import * as React from 'react';
-import { collection, onSnapshot, updateDoc, deleteDoc, doc, setDoc } from 'firebase/firestore';
+import { collection, onSnapshot, updateDoc, deleteDoc, doc, setDoc, getDocs } from 'firebase/firestore';
 import type { Project } from '@/types';
 import { db } from '@/lib/firebase';
 import { useToast } from './use-toast';
+import { seedProjects } from '@/lib/seed';
 
 // This hook manages project state and syncs it with Firebase Firestore.
 export function useProjects() {
@@ -16,12 +17,24 @@ export function useProjects() {
   // Load projects from Firestore on initial render
   React.useEffect(() => {
     const projectsCollection = collection(db, 'projects');
+
+    const checkForSeed = async () => {
+      const snapshot = await getDocs(projectsCollection);
+      if (snapshot.empty) {
+        console.log("Projects collection is empty. Seeding initial data...");
+        toast({ title: "Configurazione iniziale...", description: "Caricamento dei progetti di esempio in corso." });
+        await seedProjects();
+        toast({ title: "Configurazione completata!", description: "I progetti di esempio sono stati caricati." });
+      }
+    };
+    
+    checkForSeed();
     
     const unsubscribe = onSnapshot(projectsCollection, (snapshot) => {
       const projectList = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
-      } as Project));
+      } as Project)).sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
       setProjects(projectList);
       setIsInitialized(true);
     }, (error) => {
