@@ -219,15 +219,13 @@ const addCompattoLayout = (pdf: PdfDocument, project: Project & { imageData: str
 };
 
 const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
-    pdf.doc.setTextColor(0, 0, 0);
-    pdf.doc.setFont("helvetica", "normal");
-    pdf.doc.setFontSize(10);
+    pdf.doc.setTextColor(0, 0, 0); // Ensure text is black
 
     const leftColWidth = 55;
     const rightColX = pdf.margin + leftColWidth + 5;
     const rightColWidth = pdf.contentWidth - leftColWidth - 5;
-    const lineHeight = 5;
-    const entrySpacing = 3;
+    const lineHeight = 4.5;
+    const entrySpacing = 2;
 
     const dateFormatted = `da ${format(parseISO(project.startDate), 'MMMM yyyy', { locale: it })} a ${format(parseISO(project.endDate), 'MMMM yyyy', { locale: it })}`;
 
@@ -243,34 +241,36 @@ const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
         const valueLines = pdf.doc.splitTextToSize(entry.value, rightColWidth);
         requiredHeight += valueLines.length * lineHeight + entrySpacing;
     }
-    requiredHeight += 10; // Extra spacing after block
+    requiredHeight += 8; // Extra spacing after block
 
     pdf.checkNewPage(requiredHeight);
 
     const blockStartY = pdf.y;
 
     for (const entry of entries) {
-        // Set text color for every entry to be safe
         pdf.doc.setTextColor(0, 0, 0);
 
+        const valueLines = pdf.doc.splitTextToSize(entry.value, rightColWidth);
+        const blockHeight = valueLines.length * lineHeight;
+
         pdf.doc.setFont("helvetica", "bold");
+        pdf.doc.setFontSize(10);
         pdf.doc.text(entry.label, pdf.margin, pdf.y);
         
         pdf.doc.setFont("helvetica", "normal");
-        const valueLines = pdf.doc.splitTextToSize(entry.value, rightColWidth);
+        pdf.doc.setFontSize(10);
         pdf.doc.text(valueLines, rightColX, pdf.y);
         
-        const blockHeight = valueLines.length * lineHeight;
         pdf.y += blockHeight + entrySpacing;
     }
-
+    
     const blockEndY = pdf.y - entrySpacing;
 
     pdf.doc.setDrawColor(200, 200, 200);
     pdf.doc.setLineWidth(0.2);
     pdf.doc.line(pdf.margin + leftColWidth + 2, blockStartY - 2, pdf.margin + leftColWidth + 2, blockEndY);
 
-    pdf.y += 10; // Spacing after the project block
+    pdf.y += 8; // Spacing after the project block
 };
 
 
