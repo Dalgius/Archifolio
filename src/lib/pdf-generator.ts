@@ -219,12 +219,15 @@ const addCompattoLayout = (pdf: PdfDocument, project: Project & { imageData: str
 };
 
 const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
-    const startY = pdf.y;
+    pdf.doc.setTextColor(0, 0, 0);
+    pdf.doc.setFont("helvetica", "normal");
+    pdf.doc.setFontSize(10);
 
     const leftColWidth = 55;
     const rightColX = pdf.margin + leftColWidth + 5;
     const rightColWidth = pdf.contentWidth - leftColWidth - 5;
     const lineHeight = 5;
+    const entrySpacing = 3;
 
     const dateFormatted = `da ${format(parseISO(project.startDate), 'MMMM yyyy', { locale: it })} a ${format(parseISO(project.endDate), 'MMMM yyyy', { locale: it })}`;
 
@@ -238,18 +241,18 @@ const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
     let requiredHeight = 0;
     for (const entry of entries) {
         const valueLines = pdf.doc.splitTextToSize(entry.value, rightColWidth);
-        requiredHeight += valueLines.length * lineHeight + 2;
+        requiredHeight += valueLines.length * lineHeight + entrySpacing;
     }
-    requiredHeight += 10; // Extra spacing
+    requiredHeight += 10; // Extra spacing after block
 
     pdf.checkNewPage(requiredHeight);
-
-    // FIX: Ensure text color is black at the start of the block
-    pdf.doc.setTextColor(0, 0, 0);
 
     const blockStartY = pdf.y;
 
     for (const entry of entries) {
+        // Set text color for every entry to be safe
+        pdf.doc.setTextColor(0, 0, 0);
+
         pdf.doc.setFont("helvetica", "bold");
         pdf.doc.text(entry.label, pdf.margin, pdf.y);
         
@@ -257,22 +260,21 @@ const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
         const valueLines = pdf.doc.splitTextToSize(entry.value, rightColWidth);
         pdf.doc.text(valueLines, rightColX, pdf.y);
         
-        pdf.y += valueLines.length * lineHeight + 2; // Spacing after each entry
+        const blockHeight = valueLines.length * lineHeight;
+        pdf.y += blockHeight + entrySpacing;
     }
 
-    const blockEndY = pdf.y;
+    const blockEndY = pdf.y - entrySpacing;
 
-    // Draw vertical separator line for this block
     pdf.doc.setDrawColor(200, 200, 200);
     pdf.doc.setLineWidth(0.2);
-    pdf.doc.line(pdf.margin + leftColWidth + 2, blockStartY - 2, pdf.margin + leftColWidth + 2, blockEndY - 2);
+    pdf.doc.line(pdf.margin + leftColWidth + 2, blockStartY - 2, pdf.margin + leftColWidth + 2, blockEndY);
 
     pdf.y += 10; // Spacing after the project block
 };
 
 
 export async function generatePortfolioPDF(projects: Project[], layout: PdfLayout) {
-    const pdf = new jsPDF('p', 'mm', 'a4');
     const pdfDoc = new PdfDocument();
     
     const projectsWithImageData = layout !== "Solo Testo"
