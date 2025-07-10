@@ -230,49 +230,46 @@ const addCompattoLayout = (pdf: PdfDocument, project: Project & { imageData: str
 };
 
 const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
-    pdf.doc.setTextColor(0, 0, 0);
-
     const leftColWidth = 55;
     const separatorX = pdf.margin + leftColWidth + 2.5;
     const rightColX = separatorX + 2.5;
     const rightColWidth = pdf.pageWidth - rightColX - pdf.margin;
     
-    const lineHeight = 3.8;
-    const entrySpacing = 0.5;
-    const blockSpacing = 3;
+    const lineHeight = 4.2;
+    const entrySpacing = 1;
+    const blockSpacing = 5;
 
     const dateFormatted = `da ${format(parseISO(project.startDate), 'MMMM yyyy', { locale: it })} a ${format(parseISO(project.endDate), 'MMMM yyyy', { locale: it })}`;
 
     const entries = [
-        { label: '• Date', value: dateFormatted },
-        { label: '• Nome e tipo ente', value: project.client },
-        { label: '• Titolo del progetto', value: project.name },
-        { label: '• Tipo di attività', value: project.service }
+        { label: 'Date', value: dateFormatted },
+        { label: 'Nome e tipo ente', value: project.client },
+        { label: 'Titolo del progetto', value: project.name },
+        { label: 'Tipo di attività', value: project.service }
     ];
 
-    let totalBlockHeight = 0;
+    let requiredBlockHeight = 0;
     for (const entry of entries) {
         const valueLines = pdf.doc.splitTextToSize(entry.value, rightColWidth);
-        const labelLines = pdf.doc.splitTextToSize(entry.label, leftColWidth);
-        totalBlockHeight += Math.max(valueLines.length, labelLines.length) * lineHeight + entrySpacing;
+        requiredBlockHeight += valueLines.length * lineHeight + entrySpacing;
     }
-    totalBlockHeight += blockSpacing;
-
-    pdf.checkNewPage(totalBlockHeight);
-
-    const startY = pdf.y;
-    let currentY = pdf.y;
+    requiredBlockHeight += blockSpacing;
+    
+    pdf.checkNewPage(requiredBlockHeight);
     
     pdf.doc.setTextColor(0, 0, 0);
 
+    const startY = pdf.y;
+    let currentY = startY;
+
     for (const entry of entries) {
-        const valueLines = pdf.doc.splitTextToSize(entry.value, rightColWidth);
         const labelLines = pdf.doc.splitTextToSize(entry.label, leftColWidth);
-        const blockHeight = Math.max(valueLines.length, labelLines.length) * lineHeight;
+        const valueLines = pdf.doc.splitTextToSize(entry.value, rightColWidth);
+        const blockHeight = Math.max(labelLines.length, valueLines.length) * lineHeight;
 
         pdf.doc.setFont("helvetica", "bold");
         pdf.doc.setFontSize(10);
-        pdf.doc.text(entry.label, pdf.margin, currentY, { baseline: 'top' });
+        pdf.doc.text(labelLines, pdf.margin + leftColWidth, currentY, { baseline: 'top', align: 'right' });
         
         pdf.doc.setFont("helvetica", "normal");
         pdf.doc.setFontSize(10);
