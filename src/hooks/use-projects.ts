@@ -35,9 +35,10 @@ export function useProjects() {
         } catch (error) {
            toast({ variant: "destructive", title: "Errore di configurazione", description: "Impossibile caricare i progetti di esempio." });
         }
-      } else {
-         window.sessionStorage.setItem('seeded', 'true');
       }
+      // This flag should only be set if seeding was attempted or not needed.
+      // We no longer set it if the collection is just populated.
+      // The session storage prevents re-seeding within the same session.
       isSeeding = false;
     };
     
@@ -121,5 +122,3 @@ export function useProjects() {
     deleteProject,
   };
 }
-
-    
