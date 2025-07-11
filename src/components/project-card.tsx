@@ -88,7 +88,7 @@ export function ProjectCard({ project, onEdit, onDelete, priority = false, varia
         </div>
         <CardContent className="p-4 flex-grow flex flex-col">
             <h3 className="text-sm font-bold uppercase leading-tight mb-1">{project.name}</h3>
-            <p className="text-xs font-semibold text-neutral-700 mb-2">{project.location}</p>
+            <p className="text-sm font-semibold text-neutral-700 mb-2">{project.location}</p>
             <div className="space-y-1 text-xs text-neutral-500 flex-grow mt-auto">
                 <p><strong className="font-medium text-neutral-600">Committente:</strong> {project.client}</p>
                 <p><strong className="font-medium text-neutral-600">Inizio:</strong> {startDateFormatted}</p>
