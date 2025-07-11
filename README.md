@@ -17,6 +17,15 @@ For the application to connect to Firebase, you need to set up environment varia
 
 When deploying to a hosting provider like Netlify or Vercel, you must set these same environment variables in the provider's dashboard.
 
+### Admin Authentication
+
+The admin panel at `/admin` is protected by a username and password. You must set the following environment variables in your hosting provider's dashboard (e.g., Netlify) to enable login:
+
+- `ADMIN_USERNAME`: The username for the admin panel.
+- `ADMIN_PASSWORD`: The password for the admin panel.
+
+For local development, you can add these to your `.env.local` file.
+
 ## Admin vs. Public Builds
 
 To create a "public-only" version of the site for production (e.g., for your final client-facing site), you can use the `NEXT_PUBLIC_BUILD_MODE` environment variable.

@@ -1,12 +1,20 @@
+
 'use client';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset } from "@/components/ui/sidebar";
-import { LayoutGrid, Globe } from "lucide-react";
+import { LayoutGrid, Globe, LogOut } from "lucide-react";
 import { ArchifolioLogo } from "@/components/icons";
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
+import { logout } from '@/lib/actions';
+import { Button } from "@/components/ui/button";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
+
   return (
     <SidebarProvider>
       <Sidebar>
@@ -21,7 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname.startsWith('/admin')}>
+              <SidebarMenuButton asChild isActive={pathname.startsWith('/admin') && pathname !== '/admin/login'}>
                 <Link href="/admin">
                   <LayoutGrid />
                   <span>Progetti</span>
@@ -38,6 +46,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarContent>
+         <div className="p-2 mt-auto">
+            <form action={logout}>
+              <Button variant="ghost" className="w-full justify-start gap-2">
+                <LogOut />
+                <span>Logout</span>
+              </Button>
+            </form>
+          </div>
       </Sidebar>
       <SidebarInset>
         {children}
