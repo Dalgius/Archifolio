@@ -43,7 +43,7 @@ export default function PortfolioPage() {
       <div id="projects" className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {publicProjects.length > 0 ? (
           publicProjects.map((project) => (
-            <Link key={project.id} href={`/projects/${project.id}`} className="group">
+            <Link key={project.id} href={`/projects/${project.id}`}>
               <ProjectCard project={project} />
             </Link>
           ))

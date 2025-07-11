@@ -2,7 +2,7 @@
 "use client";
 
 import Image from "next/image";
-import { Edit, MoreVertical, Trash2, Eye, EyeOff, MapPin } from "lucide-react";
+import { Edit, MoreVertical, Trash2, MapPin } from "lucide-react";
 import type { Project } from "@/types";
 import {
   Card,
@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "./ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 
 interface ProjectCardProps {
@@ -29,16 +29,16 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
   const statusColors: { [key in Project["status"]]: string } = {
-    "Completato": "bg-green-500 hover:bg-green-600",
-    "In Corso": "bg-blue-500 hover:bg-blue-600",
-    "Concettuale": "bg-purple-500 hover:bg-purple-600",
-    "Da fare": "bg-yellow-500 hover:bg-yellow-600",
+    "Completato": "bg-green-100 text-green-800 border-green-200",
+    "In Corso": "bg-blue-100 text-blue-800 border-blue-200",
+    "Concettuale": "bg-purple-100 text-purple-800 border-purple-200",
+    "Da fare": "bg-yellow-100 text-yellow-800 border-yellow-200",
   };
 
   const isPublicView = !onEdit && !onDelete;
 
   const cardContent = (
-      <Card className="overflow-hidden transition-all duration-300 ease-in-out h-full flex flex-col group-hover:shadow-xl">
+      <Card className="overflow-hidden transition-all duration-300 ease-in-out h-full flex flex-col hover:shadow-xl group">
         <CardHeader className="p-0 relative">
           <Image
             src={project.image}
@@ -71,29 +71,18 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
           )}
         </CardHeader>
         <CardContent className="p-4 flex-grow flex flex-col">
-          <div className="flex items-start justify-between">
-            <CardTitle className="text-lg font-bold leading-tight font-headline pr-2">
+          <div className="flex items-start justify-between gap-2">
+            <CardTitle className="text-sm font-bold leading-tight font-headline uppercase flex-1 pr-2">
               {project.name}
             </CardTitle>
-            <div className="flex items-center gap-2 flex-shrink-0">
-                {!isPublicView && (
-                    <Tooltip>
-                        <TooltipTrigger>
-                            {project.isPublic ? <Eye className="h-4 w-4 text-green-500" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>{project.isPublic ? "Visibile al pubblico" : "Nascosto al pubblico"}</p>
-                        </TooltipContent>
-                    </Tooltip>
-                )}
-                <Badge
-                    className={`text-white text-xs ${statusColors[project.status]}`}
-                >
-                    {project.status}
-                </Badge>
-            </div>
+            <Badge
+                variant="outline"
+                className={`text-xs whitespace-nowrap ${statusColors[project.status]}`}
+            >
+                {project.status}
+            </Badge>
           </div>
-          <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1 mb-2">
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-2">
             <MapPin className="h-3.5 w-3.5" />
             <span>{project.location}</span>
           </div>
