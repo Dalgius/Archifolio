@@ -101,12 +101,6 @@ export function ProjectCard({ project, onEdit, onDelete, priority = false, varia
                 <p><strong className="font-medium text-neutral-800">Località:</strong> {project.location}</p>
                 <p><strong className="font-medium text-neutral-800">Prestazione:</strong> {project.service}</p>
             </div>
-             <Badge
-                variant="outline"
-                className={`text-xs whitespace-nowrap mt-3 self-start`}
-            >
-                {project.status}
-            </Badge>
         </CardContent>
       </Card>
     </TooltipProvider>
