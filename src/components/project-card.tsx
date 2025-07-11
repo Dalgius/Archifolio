@@ -41,8 +41,7 @@ export function ProjectCard({ project, onEdit, onDelete, priority = false, varia
             data-ai-hint="architecture design"
             priority={priority}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/10 to-transparent" />
-        <CardContent className="p-4 flex flex-col justify-end h-full absolute bottom-0 w-full text-white">
+        <CardContent className="p-4 flex flex-col justify-end h-full absolute bottom-0 w-full text-white bg-gradient-to-t from-black/60 to-transparent">
           <h3 className="text-lg font-bold uppercase leading-tight">{project.name}</h3>
         </CardContent>
       </Card>
