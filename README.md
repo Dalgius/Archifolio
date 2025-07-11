@@ -17,4 +17,9 @@ For the application to connect to Firebase, you need to set up environment varia
 
 When deploying to a hosting provider like Netlify or Vercel, you must set these same environment variables in the provider's dashboard.
 
-To create a "public-only" version of the site for production, set the `NEXT_PUBLIC_BUILD_MODE` environment variable to `public` in your hosting provider's build settings. This will automatically hide the "Accesso Admin" button from the public-facing site.
+## Admin vs. Public Builds
+
+To create a "public-only" version of the site for production (e.g., for your final client-facing site), you can use the `NEXT_PUBLIC_BUILD_MODE` environment variable.
+
+-   **Admin & Preview (Default):** If this variable is not set, the app will be built in its default state, which includes the public portfolio and the "Accesso Admin" button. This is ideal for your Netlify admin panel.
+-   **Public-Only Site:** Set the `NEXT_PUBLIC_BUILD_MODE` environment variable to `public` in your hosting provider's build settings. This will automatically hide the "Accesso Admin" button from the header, creating a clean version of the site for public viewing.
