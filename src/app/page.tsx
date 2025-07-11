@@ -24,7 +24,7 @@ export default function PortfolioPage() {
     : publicProjects.filter(p => p.typology === selectedTypology);
 
   const pageContent = (
-     <div className="container mx-auto px-4 py-12">
+     <div className="container px-4 py-12">
       {!isInitialized && (
          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (

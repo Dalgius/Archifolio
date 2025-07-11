@@ -17,7 +17,7 @@ export function Header({ typologies, selectedTypology, setSelectedTypology }: He
 
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container h-20 flex items-center justify-between">
+            <div className="container h-20 flex items-center justify-between px-4">
                 <div className="flex items-center gap-2">
                     <Link href="/" className="flex items-center gap-2">
                         <ArchifolioLogo className="w-8 h-8" />
@@ -26,8 +26,8 @@ export function Header({ typologies, selectedTypology, setSelectedTypology }: He
                 </div>
 
                 <nav className="flex gap-2 items-center justify-end">
-                    {isHomePage && typologies && setSelectedTypology && (
-                         <div className="flex flex-wrap gap-2 items-center">
+                    {isHomePage && typologies && setSelectedTypology && typologies.length > 1 && (
+                        <div className="flex flex-wrap gap-2 items-center">
                             {typologies.map((typology) => (
                                 <Button 
                                     key={typology}
