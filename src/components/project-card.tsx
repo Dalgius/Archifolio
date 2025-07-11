@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "./ui/button";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 
 interface ProjectCardProps {
@@ -26,9 +27,10 @@ interface ProjectCardProps {
   onEdit?: (project: Project) => void;
   onDelete?: (project: Project) => void;
   priority?: boolean;
+  variant?: 'default' | 'compact';
 }
 
-export function ProjectCard({ project, onEdit, onDelete, priority = false }: ProjectCardProps) {
+export function ProjectCard({ project, onEdit, onDelete, priority = false, variant = 'default' }: ProjectCardProps) {
   const statusColors: { [key in Project["status"]]: string } = {
     "Completato": "bg-green-100 text-green-800 border-green-200",
     "In Corso": "bg-blue-100 text-blue-800 border-blue-200",
@@ -46,7 +48,10 @@ export function ProjectCard({ project, onEdit, onDelete, priority = false }: Pro
             alt={project.name}
             width={600}
             height={400}
-            className="object-cover w-full h-48 transition-transform duration-300 ease-in-out group-hover:scale-105"
+            className={cn(
+              "object-cover w-full transition-transform duration-300 ease-in-out group-hover:scale-105",
+              variant === 'compact' ? 'h-32' : 'h-48'
+            )}
             data-ai-hint="architecture design"
             priority={priority}
           />
@@ -72,9 +77,12 @@ export function ProjectCard({ project, onEdit, onDelete, priority = false }: Pro
             </div>
           )}
         </CardHeader>
-        <CardContent className="p-4 flex-grow flex flex-col">
+        <CardContent className={cn("flex-grow flex flex-col", variant === 'compact' ? 'p-3' : 'p-4')}>
           <div className="flex items-start justify-between gap-2">
-            <CardTitle className="text-sm font-bold leading-tight font-headline uppercase flex-1 pr-2">
+            <CardTitle className={cn(
+                "leading-tight font-headline uppercase flex-1 pr-2",
+                 variant === 'compact' ? 'text-xs' : 'text-sm font-bold'
+              )}>
               {project.name}
             </CardTitle>
             <Badge
