@@ -96,8 +96,8 @@ export default function AdminPage() {
         </header>
         <main className="flex-1 p-4 md:p-6">
           <Skeleton className="h-10 w-64 mb-6" />
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {[...Array(8)].map((_, i) => (
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
+            {[...Array(12)].map((_, i) => (
               <div key={i} className="space-y-2">
                 <Skeleton className="h-32 w-full" />
                 <Skeleton className="h-5 w-3/4" />
@@ -216,7 +216,7 @@ function ProjectGrid({ projects, onEdit, onDelete }: { projects: Project[], onEd
     );
   }
   return (
-    <div className="grid grid-cols-1 gap-6 mt-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-2 gap-4 mt-6 md:grid-cols-4 lg:grid-cols-6">
       {projects.map((project) => (
         <ProjectCard key={project.id} project={project} onEdit={onEdit} onDelete={onDelete} variant="default" />
       ))}
