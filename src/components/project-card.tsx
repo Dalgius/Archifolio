@@ -31,7 +31,7 @@ export function ProjectCard({ project, onEdit, onDelete, priority = false, varia
   
   if (variant === 'compact') {
     return (
-      <Card className="overflow-hidden transition-all duration-300 ease-in-out h-full flex flex-col group border-0 rounded-none">
+      <Card className="overflow-hidden transition-all duration-300 ease-in-out h-full flex flex-col group border-0 rounded-none relative">
         <Image
             src={project.image}
             alt={project.name}
@@ -41,8 +41,8 @@ export function ProjectCard({ project, onEdit, onDelete, priority = false, varia
             data-ai-hint="architecture design"
             priority={priority}
         />
-        <CardContent className="p-4 flex flex-col justify-end h-full absolute bottom-0 w-full text-white bg-gradient-to-t from-black/60 to-transparent">
-          <h3 className="text-lg font-bold uppercase leading-tight">{project.name}</h3>
+        <CardContent className="p-4 flex flex-col justify-end h-full absolute bottom-0 w-full text-white">
+          <h3 className="text-lg font-bold uppercase leading-tight" style={{textShadow: '0 2px 4px rgba(0,0,0,0.5)'}}>{project.name}</h3>
         </CardContent>
       </Card>
     );
@@ -61,7 +61,7 @@ export function ProjectCard({ project, onEdit, onDelete, priority = false, varia
               alt={project.name}
               width={600}
               height={400}
-              className="object-cover w-full h-48"
+              className="object-cover w-full h-32"
               data-ai-hint="architecture design"
               priority={priority}
           />
@@ -85,8 +85,8 @@ export function ProjectCard({ project, onEdit, onDelete, priority = false, varia
             </DropdownMenu>
           </div>
         </div>
-        <CardContent className="p-4 flex-grow flex flex-col">
-            <h3 className="text-sm font-bold uppercase leading-tight mb-1">{project.name}</h3>
+        <CardContent className="p-3 flex-grow flex flex-col">
+            <h3 className="text-xs font-bold uppercase leading-tight mb-1 truncate">{project.name}</h3>
             <p className="text-sm font-semibold text-muted-foreground mb-2">{project.location}</p>
             <div className="space-y-1 text-xs text-muted-foreground/80 flex-grow mt-auto">
                 <p><strong className="font-medium text-muted-foreground">Committente:</strong> {project.client}</p>
