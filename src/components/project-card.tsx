@@ -32,17 +32,19 @@ export function ProjectCard({ project, onEdit, onDelete, priority = false, varia
   if (variant === 'compact') {
     return (
       <Card className="overflow-hidden transition-all duration-300 ease-in-out h-full flex flex-col group border-0 rounded-none relative">
-        <Image
-            src={project.image}
-            alt={project.name}
-            width={600}
-            height={400}
-            className="object-cover w-full h-full transition-transform duration-300 ease-in-out group-hover:scale-105"
-            data-ai-hint="architecture design"
-            priority={priority}
-        />
-        <CardContent className="p-4 flex flex-col justify-end h-full absolute bottom-0 w-full text-white">
-          <h3 className="text-lg font-bold uppercase leading-tight" style={{textShadow: '0 2px 4px rgba(0,0,0,0.5)'}}>{project.name}</h3>
+        <div className="relative w-full aspect-square">
+          <Image
+              src={project.image}
+              alt={project.name}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover w-full h-full transition-transform duration-300 ease-in-out group-hover:scale-105"
+              data-ai-hint="architecture design"
+              priority={priority}
+          />
+        </div>
+        <CardContent className="p-4 flex flex-col justify-end h-full absolute bottom-0 w-full text-white bg-gradient-to-t from-black/60 to-transparent">
+          <h3 className="text-lg font-bold uppercase leading-tight">{project.name}</h3>
         </CardContent>
       </Card>
     );
