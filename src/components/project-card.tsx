@@ -87,13 +87,13 @@ export function ProjectCard({ project, onEdit, onDelete, priority = false, varia
           </div>
         </div>
         <CardContent className="p-4 flex-grow flex flex-col">
-            <h3 className="text-sm font-bold uppercase leading-tight mb-2">{project.name}</h3>
-            <div className="space-y-1 text-xs text-neutral-600 flex-grow mt-2">
-                <p><strong className="font-medium text-neutral-800">Committente:</strong> {project.client}</p>
-                <p><strong className="font-medium text-neutral-800">Inizio:</strong> {startDateFormatted}</p>
-                <p><strong className="font-medium text-neutral-800">Importo:</strong> {amountFormatted}</p>
-                <p><strong className="font-medium text-neutral-800">Località:</strong> {project.location}</p>
-                <p><strong className="font-medium text-neutral-800">Prestazione:</strong> {project.service}</p>
+            <h3 className="text-sm font-bold uppercase leading-tight mb-1">{project.name}</h3>
+            <p className="text-xs font-semibold text-neutral-700 mb-2">{project.location}</p>
+            <div className="space-y-1 text-xs text-neutral-500 flex-grow mt-auto">
+                <p><strong className="font-medium text-neutral-600">Committente:</strong> {project.client}</p>
+                <p><strong className="font-medium text-neutral-600">Inizio:</strong> {startDateFormatted}</p>
+                <p><strong className="font-medium text-neutral-600">Importo:</strong> {amountFormatted}</p>
+                <p><strong className="font-medium text-neutral-600">Prestazione:</strong> {project.service}</p>
             </div>
         </CardContent>
       </Card>
