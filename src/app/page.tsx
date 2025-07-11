@@ -24,25 +24,23 @@ export default function PortfolioPage() {
     : publicProjects.filter(p => p.typology === selectedTypology);
 
   const pageContent = (
-     <div className="container mx-auto px-4 py-12">
+     <div className="container mx-auto px-4">
       {!isInitialized && (
-         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {[...Array(6)].map((_, i) => (
+         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {[...Array(8)].map((_, i) => (
               <div key={i} className="space-y-2">
-                <Skeleton className="h-48 w-full" />
-                <Skeleton className="h-6 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-64 w-full" />
               </div>
           ))}
         </div>
       )}
 
       {isInitialized && (
-        <div id="projects" className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div id="projects" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredProjects.length > 0 ? (
             filteredProjects.map((project, index) => (
-              <Link key={project.id} href={`/projects/${project.id}`}>
-                <ProjectCard project={project} priority={index < 3} />
+              <Link key={project.id} href={`/projects/${project.id}`} className="block h-full">
+                <ProjectCard project={project} priority={index < 4} />
               </Link>
             ))
           ) : (
