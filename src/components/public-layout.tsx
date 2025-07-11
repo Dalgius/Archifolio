@@ -1,9 +1,18 @@
+
 'use client';
 import { usePathname } from 'next/navigation';
 import { Header } from './header';
 import { Footer } from './footer';
+import * as React from 'react';
 
-export default function PublicLayout({ children }: { children: React.ReactNode }) {
+export interface PublicLayoutProps {
+  children?: React.ReactNode;
+  typologies?: string[];
+  selectedTypology?: string;
+  setSelectedTypology?: (typology: string) => void;
+}
+
+export default function PublicLayout({ children, ...props }: PublicLayoutProps) {
     const pathname = usePathname();
     const isAdminPage = pathname.startsWith('/admin');
 
@@ -13,7 +22,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
     return (
         <div className="flex flex-col min-h-screen">
-            <Header />
+            <Header {...props} />
             <main className="flex-grow">
               {children}
             </main>
