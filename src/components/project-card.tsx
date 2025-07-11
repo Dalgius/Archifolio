@@ -25,9 +25,10 @@ interface ProjectCardProps {
   project: Project;
   onEdit?: (project: Project) => void;
   onDelete?: (project: Project) => void;
+  priority?: boolean;
 }
 
-export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
+export function ProjectCard({ project, onEdit, onDelete, priority = false }: ProjectCardProps) {
   const statusColors: { [key in Project["status"]]: string } = {
     "Completato": "bg-green-100 text-green-800 border-green-200",
     "In Corso": "bg-blue-100 text-blue-800 border-blue-200",
@@ -47,6 +48,7 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
             height={400}
             className="object-cover w-full h-48 transition-transform duration-300 ease-in-out group-hover:scale-105"
             data-ai-hint="architecture design"
+            priority={priority}
           />
           {!isPublicView && (
             <div className="absolute top-2 right-2">

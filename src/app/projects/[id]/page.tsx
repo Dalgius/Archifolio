@@ -69,6 +69,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
           height={800}
           className="w-full h-auto rounded-lg object-cover mb-8 shadow-lg"
           data-ai-hint="architecture design"
+          priority
         />
         <div className="flex flex-wrap gap-4 items-center mb-4 text-muted-foreground">
             <Badge variant="secondary" className="text-base">{project.status}</Badge>

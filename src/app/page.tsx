@@ -70,9 +70,9 @@ export default function PortfolioPage() {
 
       <div id="projects" className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {filteredProjects.length > 0 ? (
-          filteredProjects.map((project) => (
+          filteredProjects.map((project, index) => (
             <Link key={project.id} href={`/projects/${project.id}`}>
-              <ProjectCard project={project} />
+              <ProjectCard project={project} priority={index === 0} />
             </Link>
           ))
         ) : (
