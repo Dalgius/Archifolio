@@ -216,9 +216,9 @@ function ProjectGrid({ projects, onEdit, onDelete }: { projects: Project[], onEd
     );
   }
   return (
-    <div className="grid grid-cols-2 gap-4 mt-6 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
+    <div className="grid grid-cols-1 gap-6 mt-6 sm:grid-cols-2 lg:grid-cols-3">
       {projects.map((project) => (
-        <ProjectCard key={project.id} project={project} onEdit={onEdit} onDelete={onDelete} variant="compact" />
+        <ProjectCard key={project.id} project={project} onEdit={onEdit} onDelete={onDelete} variant="default" />
       ))}
     </div>
   );

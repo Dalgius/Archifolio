@@ -1,3 +1,4 @@
+
 export type ProjectStatus = "Completato" | "In Corso" | "Concettuale" | "Da fare";
 
 export interface Project {
@@ -16,6 +17,6 @@ export interface Project {
   amount: number; // Importo lavori
   status: ProjectStatus; // Avanzamento
   works: string[]; // Lavori
-  description?: string; // Note / Descrizione
+  description: string; // Note / Descrizione
   isPublic: boolean;
 }

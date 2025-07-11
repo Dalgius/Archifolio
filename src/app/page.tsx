@@ -40,7 +40,7 @@ export default function PortfolioPage() {
           {filteredProjects.length > 0 ? (
             filteredProjects.map((project, index) => (
               <Link key={project.id} href={`/projects/${project.id}`} className="block h-full">
-                <ProjectCard project={project} priority={index < 4} />
+                <ProjectCard project={project} priority={index < 4} variant="compact" />
               </Link>
             ))
           ) : (
