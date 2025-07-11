@@ -9,7 +9,6 @@ import {
   Card,
   CardContent,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -89,12 +88,7 @@ export function ProjectCard({ project, onEdit, onDelete, priority = false, varia
         </div>
         <CardContent className="p-4 flex-grow flex flex-col">
             <h3 className="text-sm font-bold uppercase leading-tight mb-2">{project.name}</h3>
-            {project.classification && (
-                <Badge variant="secondary" className="mb-3 self-start bg-neutral-100 text-neutral-700 border-neutral-200">
-                    {project.classification}
-                </Badge>
-            )}
-            <div className="space-y-1 text-xs text-neutral-600 flex-grow">
+            <div className="space-y-1 text-xs text-neutral-600 flex-grow mt-2">
                 <p><strong className="font-medium text-neutral-800">Committente:</strong> {project.client}</p>
                 <p><strong className="font-medium text-neutral-800">Inizio:</strong> {startDateFormatted}</p>
                 <p><strong className="font-medium text-neutral-800">Importo:</strong> {amountFormatted}</p>
