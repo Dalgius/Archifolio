@@ -31,7 +31,7 @@ export function ProjectCard({ project, onEdit, onDelete, priority = false, varia
   
   if (variant === 'compact') {
     return (
-      <Card className="overflow-hidden transition-all duration-300 ease-in-out h-full flex flex-col group">
+      <Card className="overflow-hidden transition-all duration-300 ease-in-out h-full flex flex-col group border-0 rounded-none">
         <Image
             src={project.image}
             alt={project.name}
@@ -41,7 +41,7 @@ export function ProjectCard({ project, onEdit, onDelete, priority = false, varia
             data-ai-hint="architecture design"
             priority={priority}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/10 to-transparent" />
         <CardContent className="p-4 flex flex-col justify-end h-full absolute bottom-0 w-full text-white">
           <h3 className="text-lg font-bold uppercase leading-tight">{project.name}</h3>
         </CardContent>
@@ -88,12 +88,12 @@ export function ProjectCard({ project, onEdit, onDelete, priority = false, varia
         </div>
         <CardContent className="p-4 flex-grow flex flex-col">
             <h3 className="text-sm font-bold uppercase leading-tight mb-1">{project.name}</h3>
-            <p className="text-sm font-semibold text-neutral-700 mb-2">{project.location}</p>
-            <div className="space-y-1 text-xs text-neutral-500 flex-grow mt-auto">
-                <p><strong className="font-medium text-neutral-600">Committente:</strong> {project.client}</p>
-                <p><strong className="font-medium text-neutral-600">Inizio:</strong> {startDateFormatted}</p>
-                <p><strong className="font-medium text-neutral-600">Importo:</strong> {amountFormatted}</p>
-                <p><strong className="font-medium text-neutral-600">Prestazione:</strong> {project.service}</p>
+            <p className="text-sm font-semibold text-muted-foreground mb-2">{project.location}</p>
+            <div className="space-y-1 text-xs text-muted-foreground/80 flex-grow mt-auto">
+                <p><strong className="font-medium text-muted-foreground">Committente:</strong> {project.client}</p>
+                <p><strong className="font-medium text-muted-foreground">Inizio:</strong> {startDateFormatted}</p>
+                <p><strong className="font-medium text-muted-foreground">Importo:</strong> {amountFormatted}</p>
+                <p><strong className="font-medium text-muted-foreground">Prestazione:</strong> {project.service}</p>
             </div>
         </CardContent>
       </Card>
