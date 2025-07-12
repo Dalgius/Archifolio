@@ -14,6 +14,6 @@ export const GDAStudioLogo = (props: React.SVGProps<SVGSVGElement>) => (
     >
       GDA
     </text>
-    <path d="M130 70 L130 90" stroke="currentColor" strokeWidth="2" />
+    <path d="M130 70 L130 90" stroke="currentColor" strokeWidth="10" />
   </svg>
 );
