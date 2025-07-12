@@ -21,7 +21,6 @@ export function Header({ typologies, selectedTypology, setSelectedTypology }: He
                 <div className="flex items-center gap-2">
                     <Link href="/" className="flex items-center gap-2">
                         <GDAStudioLogo className="w-8 h-8" />
-                        <span className="text-xl font-bold font-headline hidden sm:inline-block">GDAStudio</span>
                     </Link>
                 </div>
 

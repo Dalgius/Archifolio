@@ -21,9 +21,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <SidebarHeader>
           <div className="flex items-center gap-2 p-2">
             <GDAStudioLogo className="w-8 h-8" />
-            <h1 className="text-xl font-semibold font-headline text-sidebar-foreground">
-              GDAStudio
-            </h1>
           </div>
         </SidebarHeader>
         <SidebarContent>
