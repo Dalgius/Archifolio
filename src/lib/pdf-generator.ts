@@ -321,5 +321,5 @@ export async function generatePortfolioPDF(projects: Project[], layout: PdfLayou
         }
     }
     
-    pdfDoc.save(`Portfolio-Archifolio-${layout}.pdf`);
+    pdfDoc.save(`Portfolio-GDAStudio-${layout}.pdf`);
 }

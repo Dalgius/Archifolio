@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ArchifolioLogo } from './icons';
+import { GDAStudioLogo } from './icons';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 import type { PublicLayoutProps } from './public-layout';
@@ -20,8 +20,8 @@ export function Header({ typologies, selectedTypology, setSelectedTypology }: He
             <div className="container mx-auto h-20 flex items-center justify-between px-4">
                 <div className="flex items-center gap-2">
                     <Link href="/" className="flex items-center gap-2">
-                        <ArchifolioLogo className="w-8 h-8" />
-                        <span className="text-xl font-bold font-headline hidden sm:inline-block">Archifolio</span>
+                        <GDAStudioLogo className="w-8 h-8" />
+                        <span className="text-xl font-bold font-headline hidden sm:inline-block">GDAStudio</span>
                     </Link>
                 </div>
 

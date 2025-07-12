@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { useFormState } from 'react-dom';
-import { ArchifolioLogo } from '@/components/icons';
+import { GDAStudioLogo } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="mb-4 flex justify-center">
-             <ArchifolioLogo className="w-12 h-12" />
+             <GDAStudioLogo className="w-12 h-12" />
           </div>
           <CardTitle className="text-2xl font-headline">Accesso Area Riservata</CardTitle>
           <CardDescription>Inserisci le tue credenziali per gestire il portfolio.</CardDescription>
