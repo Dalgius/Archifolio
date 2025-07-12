@@ -20,7 +20,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="mb-4 flex justify-center">
-             <GDAStudioLogo className="w-12 h-12" />
+             <GDAStudioLogo className="w-14 h-14" />
           </div>
           <CardTitle className="text-2xl font-headline">Accesso Area Riservata</CardTitle>
           <CardDescription>Inserisci le tue credenziali per gestire il portfolio.</CardDescription>
