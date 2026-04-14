@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { useFormState } from 'react-dom';
+import { useActionState } from 'react';
 import { GDAStudioLogo } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,14 +13,14 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
-  const [state, formAction] = useFormState(login, null);
+  const [state, formAction] = useActionState(login, null);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="mb-4 flex justify-center">
-             <GDAStudioLogo className="w-14 h-14" />
+             <GDAStudioLogo className="w-20 h-20" />
           </div>
           <CardTitle className="text-2xl font-headline">Accesso Area Riservata</CardTitle>
           <CardDescription>Inserisci le tue credenziali per gestire il portfolio.</CardDescription>
