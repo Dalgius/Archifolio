@@ -135,17 +135,18 @@ const addCompletoLayout = (pdf: PdfDocument, project: Project & { imageData: str
     pdf.doc.setTextColor(120, 120, 120);
 
     const addWrappedDetail = (label: string, value: string) => {
-         if (textY < currentY + imageHeight) {
+         if (textY < currentY + imageHeight + 10) {
             const detailLines = pdf.doc.splitTextToSize(`${label}: ${value}`, textWidth);
             pdf.doc.text(detailLines, textX, textY);
-            textY += detailLines.length * 5;
+            textY += detailLines.length * 4.5;
         }
     };
+
+    const formattedAmount = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(project.amount);
 
     addWrappedDetail('Committente', project.client);
     addWrappedDetail('Prestazione', project.service);
     addWrappedDetail('Categoria Opere', project.category);
-    const formattedAmount = new Intl.NumberFormat('it-IT', { style: 'currency', 'currency': 'EUR' }).format(project.amount);
     addWrappedDetail('Importo', formattedAmount);
     addWrappedDetail('Stato', project.status);
     
@@ -192,10 +193,10 @@ const addCompattoLayout = (pdf: PdfDocument, project: Project & { imageData: str
     pdf.doc.setTextColor(50, 50, 50);
     const titleLines = pdf.doc.splitTextToSize(project.name.toUpperCase(), textWidth);
     pdf.doc.text(titleLines, textX, textY);
-    textY += (titleLines.length * 3.5) + 2;
+    textY += (titleLines.length * 3.5) + 1.5;
     
     pdf.doc.setFont("helvetica", "normal");
-    pdf.doc.setFontSize(8);
+    pdf.doc.setFontSize(7.5);
     pdf.doc.setTextColor(100, 100, 100);
 
     let dateString: string;
@@ -207,20 +208,25 @@ const addCompattoLayout = (pdf: PdfDocument, project: Project & { imageData: str
         dateString = startDateFormatted === endDateFormatted ? startDateFormatted : `${startDateFormatted} - ${endDateFormatted}`;
     }
 
-    const locationDate = `${project.location} ${dateString}`;
+    const locationDate = `${project.location} | ${dateString}`;
     pdf.doc.text(locationDate, textX, textY);
-    textY += 4;
+    textY += 3.5;
     
+    const formattedAmount = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(project.amount);
+
     const addDetailLine = (label: string, value: string) => {
         if (textY < currentY + projectBlockHeight - 5) {
             const line = `${label}: ${value}`;
             pdf.doc.text(line, textX, textY, { maxWidth: textWidth });
-            textY += 4;
+            textY += 3.2;
         }
     };
     
-    addDetailLine('Committente', project.client);
-    addDetailLine('Prestazione', project.service);
+    addDetailLine('Comm.', project.client);
+    addDetailLine('Prest.', project.service);
+    addDetailLine('Cat.', project.category);
+    addDetailLine('Imp.', formattedAmount);
+    addDetailLine('Stato', project.status);
     
     pdf.projectCounter++;
     pdf.doc.setDrawColor(220, 220, 220);
@@ -237,15 +243,28 @@ const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
     
     const lineHeight = 4.2;
     const entrySpacing = 1;
-    const blockSpacing = 5;
+    const blockSpacing = 6;
 
-    const dateFormatted = `da ${format(parseISO(project.startDate), 'MMMM yyyy', { locale: it })} a ${format(parseISO(project.endDate), 'MMMM yyyy', { locale: it })}`;
+    let dateString: string;
+    const startDateFormatted = format(parseISO(project.startDate), 'MMMM yyyy', { locale: it });
+    if (project.status === 'In Corso') {
+        dateString = `${startDateFormatted} - in corso`;
+    } else {
+        const endDateFormatted = format(parseISO(project.endDate), 'MMMM yyyy', { locale: it });
+        dateString = `da ${startDateFormatted} a ${endDateFormatted}`;
+    }
+
+    const formattedAmount = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(project.amount);
 
     const entries = [
-        { label: 'Date', value: dateFormatted },
-        { label: 'Nome e tipo ente', value: project.client },
-        { label: 'Titolo del progetto', value: project.name },
-        { label: 'Tipo di attività', value: project.service }
+        { label: 'Titolo del progetto', value: project.name.toUpperCase() },
+        { label: 'Periodo', value: dateString },
+        { label: 'Località', value: project.location },
+        { label: 'Committente', value: project.client },
+        { label: 'Prestazione', value: project.service },
+        { label: 'Categoria Opere', value: project.category },
+        { label: 'Importo Lavori', value: formattedAmount },
+        { label: 'Stato Avanzamento', value: project.status }
     ];
 
     let requiredBlockHeight = 0;
@@ -262,17 +281,17 @@ const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
     const startY = pdf.y;
     let currentY = startY;
 
-    for (const entry of entries) {
+    for (const [index, entry] of entries.entries()) {
         const labelLines = pdf.doc.splitTextToSize(entry.label, leftColWidth);
         const valueLines = pdf.doc.splitTextToSize(entry.value, rightColWidth);
         const blockHeight = Math.max(labelLines.length, valueLines.length) * lineHeight;
 
         pdf.doc.setFont("helvetica", "bold");
-        pdf.doc.setFontSize(10);
+        pdf.doc.setFontSize(9);
         pdf.doc.text(labelLines, pdf.margin + leftColWidth, currentY, { baseline: 'top', align: 'right' });
         
-        pdf.doc.setFont("helvetica", "normal");
-        pdf.doc.setFontSize(10);
+        pdf.doc.setFont("helvetica", index === 0 ? "bold" : "normal");
+        pdf.doc.setFontSize(9);
         pdf.doc.text(valueLines, rightColX, currentY, { baseline: 'top' });
         
         currentY += blockHeight + entrySpacing;
