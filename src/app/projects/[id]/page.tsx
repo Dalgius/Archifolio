@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -15,13 +14,20 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export const dynamic = 'force-dynamic';
 
-export default function ProjectPage({ params }: { params: { id: string } }) {
+interface ProjectPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function ProjectPage({ params }: ProjectPageProps) {
+  const { id } = React.use(params);
   const { projects, isInitialized } = useProjects();
 
   if (!isInitialized) {
     return (
       <div className="container mx-auto px-4 py-12">
-        <Skeleton className="h-10 w-48 mb-8" />
+        <div className="mb-8">
+          <Skeleton className="h-10 w-48" />
+        </div>
         <article className="max-w-4xl mx-auto">
           <Skeleton className="w-full h-[400px] rounded-lg mb-8" />
           <div className="flex gap-4 items-center mb-4">
@@ -40,7 +46,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
     );
   }
 
-  const project = projects.find((p) => p.id === params.id);
+  const project = projects.find((p) => p.id === id);
 
   if (!project || !project.isPublic) {
     notFound();
