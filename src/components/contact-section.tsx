@@ -12,11 +12,11 @@ export function ContactSection() {
     <section id="contatti" className="scroll-mt-16 border-t">
       <div className={cn(CONTAINER, 'py-20 md:py-28')}>
         <h2 className="font-display text-5xl font-medium tracking-tight md:text-7xl">Contatti</h2>
-        <div className="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 flex flex-wrap gap-x-20 gap-y-10">
           {STUDIO.email && (
             <div>
               <p className={label}>Email</p>
-              <a href={`mailto:${STUDIO.email}`} className={cn(value, 'underline-offset-4 hover:underline')}>{STUDIO.email}</a>
+              <a href={`mailto:${STUDIO.email}`} className={cn(value, 'underline-offset-4 [overflow-wrap:anywhere] hover:underline')}>{STUDIO.email}</a>
             </div>
           )}
           {STUDIO.phone && (
