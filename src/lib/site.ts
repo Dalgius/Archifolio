@@ -13,7 +13,7 @@ export const STUDIO = {
   profession: 'Architetto',
   email: 'arch.giuseppe.dalessio@gmail.com',
   phone: '',
-  address: 'Via Bachelet, 3',
+  address: 'Via Bachelet 3',
   city: 'Isernia',
   links: [
     { label: 'LinkedIn', url: 'https://www.linkedin.com/in/giuseppe-d-alessio' },
