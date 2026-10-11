@@ -32,9 +32,12 @@ export function ContactSection() {
             </div>
           )}
           {address.length > 0 && (
-            <div className="xl:col-start-2 xl:text-center">
-              <p className={label}>Studio</p>
-              <p className={value}>{address.map((line) => <span key={line} className="block">{line}</span>)}</p>
+            // The block sits in the centre of the column, its text stays left-aligned.
+            <div className="xl:col-start-2 xl:flex xl:justify-center">
+              <div>
+                <p className={label}>Studio</p>
+                <p className={value}>{address.map((line) => <span key={line} className="block">{line}</span>)}</p>
+              </div>
             </div>
           )}
           {STUDIO.links.length > 0 && (
