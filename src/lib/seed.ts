@@ -373,7 +373,7 @@ export async function seedProjects() {
         console.log('Successfully seeded projects with user data!');
     } catch (error) {
         console.error('Error seeding projects:', error);
-        throw error; // Re-throw to be caught by useProjects
+        throw error; // Re-throw so the admin page can show an error toast
     }
 }
 

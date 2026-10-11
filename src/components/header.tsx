@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { GDAStudioLogo } from './icons';
 import { Button } from './ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { cn } from '@/lib/utils';
 import type { PublicLayoutProps } from './public-layout';
 
@@ -25,6 +26,20 @@ export function Header({ typologies, selectedTypology, setSelectedTypology }: He
                 </div>
 
                 <nav className="flex gap-2 items-center justify-end">
+                    {isHomePage && typologies && setSelectedTypology && typologies.length > 1 && (
+                        <div className="md:hidden">
+                            <Select value={selectedTypology} onValueChange={setSelectedTypology}>
+                                <SelectTrigger className="h-9 w-40" aria-label="Filtra per tipologia">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {typologies.map((typology) => (
+                                        <SelectItem key={typology} value={typology}>{typology}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
                     {isHomePage && typologies && setSelectedTypology && typologies.length > 1 && (
                         <div className="hidden md:flex flex-wrap gap-1 items-center">
                             {typologies.map((typology) => (

@@ -30,8 +30,7 @@ import { ProjectCard } from "@/components/project-card";
 import { ProjectForm } from "@/components/project-form";
 import { PdfExportDialog } from "@/components/pdf-export-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-
-export const dynamic = 'force-dynamic';
+import { seedProjects } from "@/lib/seed";
 
 export default function AdminPage() {
   const { projects, addProject, updateProject, deleteProject, isInitialized } = useProjects();
@@ -63,14 +62,35 @@ export default function AdminPage() {
     setDeleteConfirmOpen(true);
   };
 
-  const handleDeleteConfirmed = () => {
-    if (projectToDelete) {
-      deleteProject(projectToDelete.id);
+  const handleDeleteConfirmed = async () => {
+    if (!projectToDelete) return;
+    setDeleteConfirmOpen(false);
+    setProjectToDelete(null);
+    try {
+      await deleteProject(projectToDelete.id);
       toast({ title: "Progetto eliminato." });
-      setDeleteConfirmOpen(false);
-      setProjectToDelete(null);
+    } catch {
+      // Error toast is shown by the useProjects hook
     }
   };
+
+  const [isSeeding, setIsSeeding] = React.useState(false);
+  const handleSeed = async () => {
+    setIsSeeding(true);
+    try {
+      await seedProjects();
+      toast({ title: "Progetti di esempio caricati." });
+    } catch {
+      toast({ variant: "destructive", title: "Errore", description: "Impossibile caricare i progetti di esempio." });
+    } finally {
+      setIsSeeding(false);
+    }
+  };
+
+  const typologySuggestions = React.useMemo(
+    () => Array.from(new Set(projects.map((p) => p.typology).filter(Boolean))).sort(),
+    [projects]
+  );
 
   const projectStatuses: ProjectStatus[] = [
     "Completato",
@@ -151,6 +171,7 @@ export default function AdminPage() {
                 onAddProject={handleAddProject}
                 onUpdateProject={handleUpdateProject}
                 projectToEdit={editingProject}
+                typologySuggestions={typologySuggestions}
                 onClose={() => setProjectFormOpen(false)}
               />
             </DialogContent>
@@ -171,6 +192,13 @@ export default function AdminPage() {
 
           <TabsContent value="All">
             <ProjectGrid projects={filteredProjects("All")} onEdit={handleEditProject} onDelete={handleDeleteInitiated} />
+            {projects.length === 0 && (
+              <div className="flex justify-center mt-4">
+                <Button variant="outline" onClick={handleSeed} disabled={isSeeding}>
+                  {isSeeding ? "Caricamento..." : "Carica progetti di esempio"}
+                </Button>
+              </div>
+            )}
           </TabsContent>
 
           {projectStatuses.map((status) => (

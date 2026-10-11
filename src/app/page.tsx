@@ -3,20 +3,16 @@
 
 import * as React from 'react';
 import { ProjectCard } from '@/components/project-card';
-import { useProjects } from '@/hooks/use-projects';
+import { usePublicProjects } from '@/hooks/use-public-projects';
 import Link from 'next/link';
 import { FileText } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import PublicLayout from '@/components/public-layout';
 
-export const dynamic = 'force-dynamic';
-
 export default function PortfolioPage() {
-  const { projects, isInitialized } = useProjects();
+  const { projects: publicProjects, isInitialized } = usePublicProjects();
   const [selectedTypology, setSelectedTypology] = React.useState<string>("All");
 
-  const publicProjects = projects.filter(project => project.isPublic);
-  
   const typologies = ["All", ...Array.from(new Set(publicProjects.map(p => p.typology).filter(Boolean)))];
 
   const filteredProjects = selectedTypology === "All" 

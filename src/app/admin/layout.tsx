@@ -1,19 +1,46 @@
 
 'use client';
+import * as React from "react";
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset } from "@/components/ui/sidebar";
-import { LayoutGrid, Globe, LogOut } from "lucide-react";
+import { LayoutGrid, Globe, LogOut, Loader2 } from "lucide-react";
+import { signOut } from "firebase/auth";
 import { GDAStudioLogo } from "@/components/icons";
 import Link from "next/link";
-import { usePathname } from 'next/navigation';
-import { logout } from '@/lib/actions';
+import { usePathname, useRouter } from 'next/navigation';
+import { getFirebaseAuth } from '@/lib/firebase';
+import { useAuth } from '@/hooks/use-auth';
 import { Button } from "@/components/ui/button";
+
+const LOGIN_ROUTE = '/admin/login';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, isLoading } = useAuth();
+  const isLoginPage = pathname === LOGIN_ROUTE;
 
-  if (pathname === '/admin/login') {
+  React.useEffect(() => {
+    if (isLoading) return;
+    if (!user && !isLoginPage) router.replace(LOGIN_ROUTE);
+    if (user && isLoginPage) router.replace('/admin');
+  }, [user, isLoading, isLoginPage, router]);
+
+  if (isLoginPage && !user) {
     return <>{children}</>;
   }
+
+  if (!user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  const handleLogout = async () => {
+    await signOut(getFirebaseAuth());
+    router.replace(LOGIN_ROUTE);
+  };
 
   return (
     <SidebarProvider>
@@ -26,7 +53,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname.startsWith('/admin') && pathname !== '/admin/login'}>
+              <SidebarMenuButton asChild isActive={pathname.startsWith('/admin') && !isLoginPage}>
                 <Link href="/admin">
                   <LayoutGrid />
                   <span>Progetti</span>
@@ -44,12 +71,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </SidebarMenu>
         </SidebarContent>
          <div className="p-2 mt-auto">
-            <form action={logout}>
-              <Button variant="ghost" className="w-full justify-start gap-2">
-                <LogOut />
-                <span>Logout</span>
-              </Button>
-            </form>
+            <Button variant="ghost" className="w-full justify-start gap-2" onClick={handleLogout}>
+              <LogOut />
+              <span>Logout</span>
+            </Button>
           </div>
       </Sidebar>
       <SidebarInset>

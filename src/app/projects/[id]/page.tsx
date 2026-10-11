@@ -9,10 +9,8 @@ import { Button } from '@/components/ui/button';
 import { notFound } from 'next/navigation';
 import { format, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
-import { useProjects } from '@/hooks/use-projects';
+import { usePublicProject } from '@/hooks/use-public-projects';
 import { Skeleton } from '@/components/ui/skeleton';
-
-export const dynamic = 'force-dynamic';
 
 interface ProjectPageProps {
   params: Promise<{ id: string }>;
@@ -20,7 +18,7 @@ interface ProjectPageProps {
 
 export default function ProjectPage({ params }: ProjectPageProps) {
   const { id } = React.use(params);
-  const { projects, isInitialized } = useProjects();
+  const { project, isInitialized } = usePublicProject(id);
 
   if (!isInitialized) {
     return (
@@ -46,9 +44,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
     );
   }
 
-  const project = projects.find((p) => p.id === id);
-
-  if (!project || !project.isPublic) {
+  if (!project) {
     notFound();
   }
 
