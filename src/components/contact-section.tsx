@@ -1,4 +1,4 @@
-import { CONTAINER, INDEX_COLUMNS } from './container';
+import { CONTAINER } from './container';
 import { STUDIO } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
@@ -12,11 +12,11 @@ export function ContactSection() {
     <section id="contatti" className="scroll-mt-16 border-t">
       <div className={cn(CONTAINER, 'py-20 md:py-28')}>
         <h2 className="font-display text-5xl font-medium tracking-tight md:text-7xl">Contatti</h2>
-        {/* Same columns as the project index: email under "Progetto", studio under "Luogo",
-            links aligned to the right edge like "Cat.". */}
-        <div className={cn('mt-12 grid gap-x-6 gap-y-10 sm:grid-cols-2', INDEX_COLUMNS)}>
+        {/* Wide screens: three equal columns, email left, studio centred, links right.
+            Below xl the long email gets its own row so it never breaks mid-word. */}
+        <div className="mt-12 grid gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3">
           {(STUDIO.email || STUDIO.phone) && (
-            <div className="space-y-10 md:col-span-3 md:col-start-1">
+            <div className="space-y-10 sm:col-span-2 xl:col-span-1">
               {STUDIO.email && (
                 <div>
                   <p className={label}>Email</p>
@@ -32,13 +32,13 @@ export function ContactSection() {
             </div>
           )}
           {address.length > 0 && (
-            <div className="md:col-start-4">
+            <div className="xl:col-start-2 xl:text-center">
               <p className={label}>Studio</p>
               <p className={value}>{address.map((line) => <span key={line} className="block">{line}</span>)}</p>
             </div>
           )}
           {STUDIO.links.length > 0 && (
-            <div className="md:col-span-2 md:col-start-5 md:text-right">
+            <div className="sm:text-right xl:col-start-3">
               <p className={label}>Link</p>
               <ul className={value}>
                 {STUDIO.links.map((link) => (
