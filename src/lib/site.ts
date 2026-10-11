@@ -8,6 +8,9 @@ export const SITE_NAME = 'GDAStudio';
 // DA SOSTITUIRE: these are placeholders. Set a field to '' (or remove a link) to hide it.
 export const STUDIO = {
   name: 'GDA Studio',
+  // Shown next to the logo in the header.
+  owner: 'Giuseppe D’Alessio',
+  profession: 'Architetto',
   email: 'info@esempio.it',
   phone: '+39 000 000 0000',
   address: 'Via Esempio 1',
