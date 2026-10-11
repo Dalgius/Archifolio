@@ -1,34 +1,52 @@
+# GDAStudio — Portfolio progetti
 
-# Firebase Studio
+Portfolio pubblico dei progetti di architettura con area admin per gestire i lavori ed esportare l'elenco in PDF.
+Next.js 15 + Firebase (Firestore e Authentication).
 
-This is a NextJS starter in Firebase Studio.
+## Variabili d'ambiente
 
-To get started, take a look at src/app/page.tsx.
+Crea `.env.local` (già in `.gitignore`) con la configurazione web del progetto Firebase:
 
-## Environment Variables
+```
+NEXT_PUBLIC_FIREBASE_API_KEY=...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+NEXT_PUBLIC_FIREBASE_APP_ID=...
+```
 
-For the application to connect to Firebase, you need to set up environment variables.
+Le stesse variabili vanno impostate nel pannello del provider di hosting (es. Netlify).
 
-1.  Create a new file in the root directory named `.env.local`.
-2.  Copy the contents of the `.env` file into your new `.env.local` file.
-3.  Fill in your actual Firebase project credentials in `.env.local`.
+## Accesso admin e sicurezza
 
-**IMPORTANT**: The `.env.local` file is listed in `.gitignore` and should never be committed to your repository. This keeps your credentials secure.
+L'area `/admin` usa Firebase Authentication (email/password). La protezione vera dei dati è nelle
+regole Firestore (`firestore.rules`): i visitatori leggono solo i progetti con `isPublic == true`,
+solo l'admin può leggere i progetti privati e scrivere.
 
-When deploying to a hosting provider like Netlify or Vercel, you must set these same environment variables in the provider's dashboard.
+Configurazione (una tantum):
 
-### Admin Authentication
+1. Firebase Console → Authentication → Sign-in method: abilita **Email/Password**.
+2. Authentication → Users → **Add user**: crea l'utente admin e copia il suo **User UID**.
+3. In `firestore.rules` sostituisci `ADMIN_UID` con quell'UID.
+4. Pubblica le regole: `firebase deploy --only firestore:rules`, oppure incollale in
+   Firestore Database → Regole.
+5. (Consigliato) Authentication → Settings → User actions: disattiva la registrazione di nuovi utenti.
 
-The admin panel at `/admin` is protected by a username and password. You must set the following environment variables in your hosting provider's dashboard (e.g., Netlify) to enable login:
+## Dati di esempio
 
-- `ADMIN_USERNAME`: The username for the admin panel.
-- `ADMIN_PASSWORD`: The password for the admin panel.
+Se la collezione `projects` è vuota, in `/admin` compare il pulsante "Carica progetti di esempio"
+(dati in `src/lib/seed.ts`).
 
-For local development, you can add these to your `.env.local` file.
+## Build pubblica
 
-## Admin vs. Public Builds
+Con `NEXT_PUBLIC_BUILD_MODE=public` il pulsante "Accesso Admin" viene nascosto dall'header.
 
-To create a "public-only" version of the site for production (e.g., for your final client-facing site), you can use the `NEXT_PUBLIC_BUILD_MODE` environment variable.
+## Sviluppo
 
--   **Admin & Preview (Default):** If this variable is not set, the app will be built in its default state, which includes the public portfolio and the "Accesso Admin" button. This is ideal for your Netlify admin panel.
--   **Public-Only Site:** Set the `NEXT_PUBLIC_BUILD_MODE` environment variable to `public` in your hosting provider's build settings. This will automatically hide the "Accesso Admin" button from the header, creating a clean version of the site for public viewing.
+```
+npm install
+npm run dev        # http://localhost:9002
+npm run typecheck
+npm run build
+```

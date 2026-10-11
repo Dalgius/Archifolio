@@ -39,6 +39,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 
 const projectSchema = z.object({
   name: z.string().min(1, "Il titolo è obbligatorio"),
@@ -51,14 +52,25 @@ const projectSchema = z.object({
   client: z.string().min(1, "Il committente è obbligatorio"),
   service: z.string().min(1, "La prestazione è obbligatoria"),
   amount: z.preprocess(
-    (a) => parseFloat(String(a).replace(/[^0-9.-]+/g, "") || '0'),
+    (a) => {
+      if (typeof a === "number") return a;
+      const text = String(a).trim();
+      // Italian format ("530.000,50"): dots are thousands separators, comma is the decimal separator.
+      const normalized = text.includes(",") ? text.replace(/\./g, "").replace(",", ".") : text;
+      return parseFloat(normalized.replace(/[^0-9.-]+/g, "") || "0");
+    },
     z.number({ invalid_type_error: "L'importo deve essere un numero" }).min(0, "L'importo non può essere negativo")
   ),
   status: z.enum(["Completato", "In Corso", "Concettuale", "Da fare"]),
   category: z.string().min(1, "La categoria è obbligatoria"),
-  works: z.array(z.string()).default([]),
-  isPublic: z.boolean().default(true),
-}).refine(data => data.endDate >= data.startDate, {
+  typology: z.string(),
+  classification: z.string(),
+  intervention: z.string(),
+  description: z.string(),
+  // Wrapped in objects because react-hook-form's useFieldArray doesn't support arrays of strings.
+  works: z.array(z.object({ value: z.string() })),
+  isPublic: z.boolean(),
+}).refine(data => data.status === "In Corso" || data.endDate >= data.startDate, {
   message: "La data di fine non può essere precedente alla data di inizio",
   path: ["endDate"],
 });
@@ -70,10 +82,11 @@ interface ProjectFormProps {
   onAddProject: (project: Omit<Project, 'id'>) => Promise<void>;
   onUpdateProject: (project: Project) => Promise<void>;
   projectToEdit?: Project | null;
+  typologySuggestions?: string[];
   onClose: () => void;
 }
 
-export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onClose }: ProjectFormProps) {
+export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, typologySuggestions = [], onClose }: ProjectFormProps) {
   const { toast } = useToast();
   const [isCompressing, setIsCompressing] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -85,7 +98,11 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
       startDate: new Date(projectToEdit.startDate),
       endDate: new Date(projectToEdit.endDate),
       amount: projectToEdit.amount || 0,
-      works: projectToEdit.works || [],
+      typology: projectToEdit.typology || "",
+      classification: projectToEdit.classification || "",
+      intervention: projectToEdit.intervention || "",
+      description: projectToEdit.description || "",
+      works: (projectToEdit.works || []).map((value) => ({ value })),
     } : {
       name: "",
       image: "https://placehold.co/600x400.png",
@@ -97,6 +114,10 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
       amount: 0,
       status: "In Corso",
       category: "",
+      typology: "",
+      classification: "",
+      intervention: "",
+      description: "",
       works: [],
       isPublic: true,
     },
@@ -160,14 +181,11 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
 
   const onSubmit = async (data: ProjectFormValues) => {
     setIsSubmitting(true);
-    const projectData = {
+    const projectData: Omit<Project, 'id'> = {
       ...data,
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       endDate: format(data.endDate, 'yyyy-MM-dd'),
-      classification: projectToEdit?.classification || "",
-      typology: projectToEdit?.typology || "",
-      intervention: projectToEdit?.intervention || "",
-      description: projectToEdit?.description || "",
+      works: data.works.map((work) => work.value.trim()).filter(Boolean),
     };
 
     try {
@@ -179,8 +197,8 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
         toast({ title: "Progetto aggiunto con successo!" });
       }
       onClose();
-    } catch (error) {
-        // Error toast is handled in the useProjects hook
+    } catch {
+        // Error toast is handled in the useProjects hook; keep the dialog open so no data is lost.
     } finally {
         setIsSubmitting(false);
     }
@@ -420,7 +438,64 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
               </FormItem>
             )}
           />
+          <FormField
+            control={form.control}
+            name="typology"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tipologia</FormLabel>
+                <FormControl>
+                  <Input placeholder="es. Chiesa" list="typology-suggestions" {...field} />
+                </FormControl>
+                <datalist id="typology-suggestions">
+                  {typologySuggestions.map((typology) => <option key={typology} value={typology} />)}
+                </datalist>
+                <FormDescription>Usata per i filtri del portfolio pubblico.</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="classification"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Classificazione</FormLabel>
+                <FormControl>
+                  <Input placeholder="es. Enti pubblici" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="intervention"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Intervento</FormLabel>
+                <FormControl>
+                  <Input placeholder="es. Ristrutturazione" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Note / Descrizione</FormLabel>
+              <FormControl>
+                <Textarea rows={4} placeholder="Descrizione del progetto, visibile nella pagina di dettaglio." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="border-t pt-6">
           <FormLabel>Lavori Principali</FormLabel>
@@ -432,7 +507,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
               <FormField
                 key={field.id}
                 control={form.control}
-                name={`works.${index}`}
+                name={`works.${index}.value`}
                 render={({ field: formField }) => (
                   <FormItem>
                     <div className="flex items-center gap-2">
@@ -461,7 +536,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, onCl
             variant="outline"
             size="sm"
             className="mt-2"
-            onClick={() => append("")}
+            onClick={() => append({ value: "" })}
           >
             Aggiungi Lavoro
           </Button>

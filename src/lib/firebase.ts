@@ -2,7 +2,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -18,6 +18,9 @@ const firebaseConfig = {
 // If the credentials are not provided in the production environment, `initializeApp` will fail at runtime.
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
-const storage = getStorage(app);
 
-export { app, db, storage };
+// Auth is created lazily: getAuth() validates the API key immediately, which would
+// break prerendering in builds where the Firebase env vars are not set.
+const getFirebaseAuth = () => getAuth(app);
+
+export { app, db, getFirebaseAuth };
