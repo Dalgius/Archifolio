@@ -12,37 +12,46 @@ export function ContactSection() {
     <section id="contatti" className="scroll-mt-16 border-t">
       <div className={cn(CONTAINER, 'py-20 md:py-28')}>
         <h2 className="font-display text-5xl font-medium tracking-tight md:text-7xl">Contatti</h2>
-        <div className="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          {STUDIO.email && (
-            <div>
-              <p className={label}>Email</p>
-              <a href={`mailto:${STUDIO.email}`} className={cn(value, 'underline-offset-4 hover:underline')}>{STUDIO.email}</a>
-            </div>
-          )}
-          {STUDIO.phone && (
-            <div>
-              <p className={label}>Telefono</p>
-              <a href={`tel:${STUDIO.phone.replace(/\s+/g, '')}`} className={cn(value, 'underline-offset-4 hover:underline')}>{STUDIO.phone}</a>
+        {/* Wide screens: email, studio and links spread with equal gaps across the width.
+            Below xl the long email gets its own row so it never breaks mid-word. */}
+        <div className="mt-12 grid gap-x-6 gap-y-10 sm:grid-cols-2 xl:flex xl:justify-between">
+          {(STUDIO.email || STUDIO.phone) && (
+            <div className="space-y-10 sm:col-span-2">
+              {STUDIO.email && (
+                <div>
+                  <p className={label}>Email</p>
+                  <a href={`mailto:${STUDIO.email}`} className={cn(value, 'underline-offset-4 [overflow-wrap:anywhere] hover:underline')}>{STUDIO.email}</a>
+                </div>
+              )}
+              {STUDIO.phone && (
+                <div>
+                  <p className={label}>Telefono</p>
+                  <a href={`tel:${STUDIO.phone.replace(/\s+/g, '')}`} className={cn(value, 'underline-offset-4 hover:underline')}>{STUDIO.phone}</a>
+                </div>
+              )}
             </div>
           )}
           {address.length > 0 && (
             <div>
               <p className={label}>Studio</p>
-              <p className={value}>{address.map((line) => <span key={line} className="block">{line}</span>)}</p>
+              <p className={value}>{address.join(', ')}</p>
             </div>
           )}
           {STUDIO.links.length > 0 && (
-            <div>
-              <p className={label}>Link</p>
-              <ul className={value}>
-                {STUDIO.links.map((link) => (
-                  <li key={link.url}>
-                    <a href={link.url} target="_blank" rel="noopener noreferrer" className="underline-offset-4 hover:underline">
-                      {link.label} ↗
-                    </a>
-                  </li>
-                ))}
-              </ul>
+            // The block sits against the right edge, its text stays left-aligned.
+            <div className="sm:flex sm:justify-end">
+              <div>
+                <p className={label}>Link</p>
+                <ul className={value}>
+                  {STUDIO.links.map((link) => (
+                    <li key={link.url}>
+                      <a href={link.url} target="_blank" rel="noopener noreferrer" className="underline-offset-4 hover:underline">
+                        {link.label} ↗
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           )}
         </div>
