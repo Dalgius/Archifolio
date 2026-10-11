@@ -28,7 +28,7 @@ Configurazione (una tantum):
 
 1. Firebase Console → Authentication → Sign-in method: abilita **Email/Password**.
 2. Authentication → Users → **Add user**: crea l'utente admin e copia il suo **User UID**.
-3. In `firestore.rules` sostituisci `ADMIN_UID` con quell'UID.
+3. In `firestore.rules` inserisci quell'UID nella funzione `isAdmin()`.
 4. Pubblica le regole: `firebase deploy --only firestore:rules`, oppure incollale in
    Firestore Database → Regole.
 5. (Consigliato) Authentication → Settings → User actions: disattiva la registrazione di nuovi utenti.

@@ -3,10 +3,10 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Sostituisci ADMIN_UID con l'UID dell'utente admin
+    // UID dell'utente admin
     // (Firebase Console → Authentication → Users → colonna "User UID").
     function isAdmin() {
-      return request.auth != null && request.auth.uid in ['ADMIN_UID'];
+      return request.auth != null && request.auth.uid in ['OW6fJtKBdsThgiJviCRC3Cijj8o2'];
     }
 
     match /projects/{projectId} {
