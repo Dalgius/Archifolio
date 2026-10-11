@@ -6,7 +6,7 @@ import type { Project } from '@/types';
 import { cn } from '@/lib/utils';
 import { formatYears, projectNumber } from '@/lib/project-format';
 import { ProjectImage } from './project-image';
-import { CONTAINER } from './container';
+import { CONTAINER, INDEX_COLUMNS } from './container';
 
 type View = 'index' | 'grid';
 type Entry = { project: Project; number: string };
@@ -117,7 +117,7 @@ export function ProjectIndex({ projects }: { projects: Project[] }) {
 
 function IndexList({ entries }: { entries: Entry[] }) {
   // N. · thumbnail slot · project · place · years · category
-  const columns = 'md:grid-cols-[3rem_4.5rem_minmax(0,1fr)_12rem_7rem_4rem] md:gap-6';
+  const columns = INDEX_COLUMNS;
 
   return (
     <div>
