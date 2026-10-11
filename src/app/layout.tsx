@@ -1,10 +1,21 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
+import { SITE_NAME, SITE_URL } from '@/lib/site';
+
+const description = 'Portfolio dei progetti di architettura di GDAStudio.';
 
 export const metadata: Metadata = {
-  title: 'GDAStudio',
-  description: 'Portfolio dei progetti di architettura di GDAStudio.',
+  metadataBase: new URL(SITE_URL),
+  title: SITE_NAME,
+  description,
+  openGraph: {
+    title: SITE_NAME,
+    description,
+    siteName: SITE_NAME,
+    locale: 'it_IT',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({

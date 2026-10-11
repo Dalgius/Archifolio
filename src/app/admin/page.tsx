@@ -6,6 +6,7 @@ import {
   Plus,
   Download,
   FileText,
+  Search,
 } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -22,8 +23,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-import type { Project, ProjectStatus } from "@/types";
+import type { Project, ProjectFields, ProjectStatus } from "@/types";
 import { useProjects } from "@/hooks/use-projects";
 import { useToast } from "@/hooks/use-toast";
 import { ProjectCard } from "@/components/project-card";
@@ -31,18 +34,25 @@ import { ProjectForm } from "@/components/project-form";
 import { PdfExportDialog } from "@/components/pdf-export-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { seedProjects } from "@/lib/seed";
+import {
+  PROJECT_SORT_LABELS, PROJECT_STATUSES, matchesSearch, sortProjects, type ProjectSort,
+} from "@/lib/project-filters";
+
+const ADMIN_SORTS: ProjectSort[] = ['date-desc', 'date-asc', 'amount-desc', 'name-asc'];
 
 export default function AdminPage() {
-  const { projects, addProject, updateProject, deleteProject, isInitialized } = useProjects();
+  const { projects, addProject, updateProject, setProjectVisibility, deleteProject, isInitialized } = useProjects();
   const { toast } = useToast();
   const [projectFormOpen, setProjectFormOpen] = React.useState(false);
   const [pdfExportOpen, setPdfExportOpen] = React.useState(false);
   const [editingProject, setEditingProject] = React.useState<Project | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
   const [projectToDelete, setProjectToDelete] = React.useState<Project | null>(null);
+  const [search, setSearch] = React.useState("");
+  const [sort, setSort] = React.useState<ProjectSort>('date-desc');
 
-  const handleAddProject = async (project: Omit<Project, 'id'>) => {
-    await addProject(project);
+  const handleAddProject = async (fields: ProjectFields, newImage: string | null) => {
+    await addProject(fields, newImage);
     setProjectFormOpen(false);
   };
 
@@ -51,8 +61,8 @@ export default function AdminPage() {
     setProjectFormOpen(true);
   };
   
-  const handleUpdateProject = async (updatedProject: Project) => {
-    await updateProject(updatedProject);
+  const handleUpdateProject = async (id: string, fields: ProjectFields, newImage: string | null) => {
+    await updateProject(id, fields, newImage);
     setEditingProject(null);
     setProjectFormOpen(false);
   }
@@ -69,6 +79,15 @@ export default function AdminPage() {
     try {
       await deleteProject(projectToDelete.id);
       toast({ title: "Progetto eliminato." });
+    } catch {
+      // Error toast is shown by the useProjects hook
+    }
+  };
+
+  const handleToggleVisibility = async (project: Project) => {
+    try {
+      await setProjectVisibility(project.id, !project.isPublic);
+      toast({ title: project.isPublic ? "Progetto reso privato." : "Progetto reso pubblico." });
     } catch {
       // Error toast is shown by the useProjects hook
     }
@@ -92,16 +111,21 @@ export default function AdminPage() {
     [projects]
   );
 
-  const projectStatuses: ProjectStatus[] = [
-    "Completato",
-    "In Corso",
-    "Concettuale",
-    "Da fare",
-  ];
+  const visibleProjects = React.useMemo(
+    () => sortProjects(projects.filter((project) => matchesSearch(project, search)), sort),
+    [projects, search, sort]
+  );
 
   const filteredProjects = (status: ProjectStatus | "All") => {
-    if (status === "All") return projects;
-    return projects.filter((project) => project.status === status);
+    if (status === "All") return visibleProjects;
+    return visibleProjects.filter((project) => project.status === status);
+  };
+
+  const gridProps = {
+    onEdit: handleEditProject,
+    onDelete: handleDeleteInitiated,
+    onToggleVisibility: handleToggleVisibility,
+    emptyMessage: search ? "Nessun progetto corrisponde alla ricerca." : "Inizia aggiungendo un nuovo progetto.",
   };
 
   if (!isInitialized) {
@@ -180,18 +204,41 @@ export default function AdminPage() {
       </header>
 
       <main className="flex-1 p-4 overflow-y-auto md:p-6">
+        <div className="flex flex-col gap-2 mb-4 sm:flex-row">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cerca per nome, località, committente, categoria..."
+              className="pl-9"
+              aria-label="Cerca progetti"
+            />
+          </div>
+          <Select value={sort} onValueChange={(value) => setSort(value as ProjectSort)}>
+            <SelectTrigger className="sm:w-56" aria-label="Ordina progetti">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {ADMIN_SORTS.map((option) => (
+                <SelectItem key={option} value={option}>{PROJECT_SORT_LABELS[option]}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <Tabs defaultValue="All" className="w-full">
-          <TabsList>
-            <TabsTrigger value="All">Tutti</TabsTrigger>
-            {projectStatuses.map((status) => (
+          <TabsList className="flex-wrap h-auto">
+            <TabsTrigger value="All">Tutti ({filteredProjects("All").length})</TabsTrigger>
+            {PROJECT_STATUSES.map((status) => (
               <TabsTrigger key={status} value={status}>
-                {status}
+                {status} ({filteredProjects(status).length})
               </TabsTrigger>
             ))}
           </TabsList>
 
           <TabsContent value="All">
-            <ProjectGrid projects={filteredProjects("All")} onEdit={handleEditProject} onDelete={handleDeleteInitiated} />
+            <ProjectGrid projects={filteredProjects("All")} {...gridProps} />
             {projects.length === 0 && (
               <div className="flex justify-center mt-4">
                 <Button variant="outline" onClick={handleSeed} disabled={isSeeding}>
@@ -201,9 +248,9 @@ export default function AdminPage() {
             )}
           </TabsContent>
 
-          {projectStatuses.map((status) => (
+          {PROJECT_STATUSES.map((status) => (
             <TabsContent key={status} value={status}>
-              <ProjectGrid projects={filteredProjects(status)} onEdit={handleEditProject} onDelete={handleDeleteInitiated} />
+              <ProjectGrid projects={filteredProjects(status)} {...gridProps} />
             </TabsContent>
           ))}
         </Tabs>
@@ -231,14 +278,22 @@ export default function AdminPage() {
   );
 }
 
-function ProjectGrid({ projects, onEdit, onDelete }: { projects: Project[], onEdit: (project: Project) => void, onDelete: (project: Project) => void }) {
+interface ProjectGridProps {
+  projects: Project[];
+  onEdit: (project: Project) => void;
+  onDelete: (project: Project) => void;
+  onToggleVisibility: (project: Project) => void;
+  emptyMessage: string;
+}
+
+function ProjectGrid({ projects, onEdit, onDelete, onToggleVisibility, emptyMessage }: ProjectGridProps) {
   if (projects.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4 text-center border-2 border-dashed rounded-lg">
         <FileText className="w-12 h-12 text-muted-foreground" />
         <h3 className="text-xl font-semibold font-headline">Nessun Progetto Trovato</h3>
         <p className="text-muted-foreground">
-          Inizia aggiungendo un nuovo progetto.
+          {emptyMessage}
         </p>
       </div>
     );
@@ -246,7 +301,7 @@ function ProjectGrid({ projects, onEdit, onDelete }: { projects: Project[], onEd
   return (
     <div className="grid grid-cols-2 gap-4 mt-6 md:grid-cols-4 lg:grid-cols-6">
       {projects.map((project) => (
-        <ProjectCard key={project.id} project={project} onEdit={onEdit} onDelete={onDelete} variant="default" />
+        <ProjectCard key={project.id} project={project} onEdit={onEdit} onDelete={onDelete} onToggleVisibility={onToggleVisibility} variant="default" />
       ))}
     </div>
   );

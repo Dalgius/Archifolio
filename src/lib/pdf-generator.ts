@@ -77,8 +77,6 @@ class PdfDocument {
     margin: number;
     contentWidth: number;
     y: number;
-    pageNumber: number;
-    projectCounter: number;
 
     constructor() {
         this.doc = new jsPDF('p', 'mm', 'a4');
@@ -86,33 +84,32 @@ class PdfDocument {
         this.pageHeight = this.doc.internal.pageSize.getHeight();
         this.margin = 20;
         this.contentWidth = this.pageWidth - this.margin * 2;
-        this.y = 0;
-        this.pageNumber = 1;
-        this.projectCounter = 0;
-    }
-
-    startPage() {
         this.y = this.margin;
-        this.projectCounter = 0;
     }
 
     newPage() {
-        this.drawFooter();
         this.doc.addPage();
-        this.pageNumber++;
-        this.startPage();
+        this.y = this.margin;
     }
 
-    drawFooter() {
+    // Footers are drawn once at the end, when the total page count is known.
+    drawFooters(label: string) {
+        const pageCount = this.doc.getNumberOfPages();
         const footerY = this.pageHeight - this.margin / 2;
-        this.doc.setFont("helvetica", "normal");
-        this.doc.setFontSize(9);
-        this.doc.setTextColor(150);
-        this.doc.text(String(this.pageNumber), this.pageWidth / 2, footerY, { align: 'center' });
+        for (let page = 1; page <= pageCount; page++) {
+            this.doc.setPage(page);
+            this.doc.setFont("helvetica", "normal");
+            this.doc.setFontSize(8);
+            this.doc.setTextColor(150);
+            this.doc.text(label, this.margin, footerY);
+            this.doc.text(`Pagina ${page} di ${pageCount}`, this.pageWidth - this.margin, footerY, { align: 'right' });
+        }
     }
 
+    // The small tolerance avoids a page break caused by floating point rounding
+    // when blocks fill the page exactly.
     checkNewPage(requiredHeight: number) {
-        if (this.y + requiredHeight > this.pageHeight - this.margin) {
+        if (this.y + requiredHeight > this.pageHeight - this.margin + 0.01) {
             this.newPage();
             return true;
         }
@@ -165,18 +162,97 @@ class PdfDocument {
         });
     }
 
-    save(filename: string) {
-        this.drawFooter();
-        this.doc.save(filename);
-    }
 }
 
 const PROJECTS_PER_PAGE_COMPLETO = 3;
 const PROJECTS_PER_PAGE_COMPATTO = 6;
 
+// Logo, document title, generation date and number of projects on the first page.
+const addHeader = (pdf: PdfDocument, title: string, projectCount: number) => {
+    const { doc, margin } = pdf;
+    const logoSize = 18;
+
+    // Simplified GDAStudio logo: dark square with "GDA" / "STUDIO".
+    doc.setFillColor(54, 57, 62);
+    doc.rect(margin, margin, logoSize, logoSize, 'F');
+    doc.setTextColor(212, 213, 216);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+    doc.text("GDA", margin + 1.8, margin + 8.5);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.text("STUDIO", margin + 1.8, margin + 13.5);
+
+    const textX = margin + logoSize + 6;
+    doc.setTextColor(40);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text(title, textX, margin + 7.5, { maxWidth: pdf.contentWidth - logoSize - 6 });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(110);
+    const count = projectCount === 1 ? "1 lavoro" : `${projectCount} lavori`;
+    doc.text(`GDAStudio · ${format(new Date(), 'd MMMM yyyy', { locale: it })} · ${count}`, textX, margin + 14);
+
+    const lineY = margin + logoSize + 4;
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.3);
+    doc.line(margin, lineY, pdf.pageWidth - margin, lineY);
+    pdf.y = lineY + 8;
+};
+
+// Final page: number of projects and total amount per "Categoria Opere".
+const addSummary = (pdf: PdfDocument, projects: Project[]) => {
+    const { doc, margin } = pdf;
+    const totals = new Map<string, { count: number; amount: number }>();
+    for (const project of projects) {
+        const category = project.category.trim() || "Senza categoria";
+        const entry = totals.get(category) ?? { count: 0, amount: 0 };
+        entry.count++;
+        entry.amount += project.amount || 0;
+        totals.set(category, entry);
+    }
+    const rows = [...totals.entries()].sort(([a], [b]) => a.localeCompare(b, 'it'));
+
+    pdf.newPage();
+    doc.setTextColor(40);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("Riepilogo per categoria opere", margin, pdf.y, { baseline: 'top' });
+    pdf.y += 12;
+
+    const countX = margin + 120;
+    const amountX = pdf.pageWidth - margin;
+    const rowHeight = 7;
+    const drawRow = (cells: [string, string, string], bold: boolean) => {
+        pdf.checkNewPage(rowHeight);
+        doc.setFont("helvetica", bold ? "bold" : "normal");
+        doc.setFontSize(9.5);
+        doc.setTextColor(bold ? 30 : 60);
+        doc.text(cells[0], margin, pdf.y, { baseline: 'top', maxWidth: countX - margin - 30 });
+        doc.text(cells[1], countX, pdf.y, { baseline: 'top', align: 'right' });
+        doc.text(cells[2], amountX, pdf.y, { baseline: 'top', align: 'right' });
+        pdf.y += rowHeight;
+    };
+    const drawRule = () => {
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.3);
+        doc.line(margin, pdf.y - 2, amountX, pdf.y - 2);
+    };
+
+    drawRow(["Categoria", "N. lavori", "Importo totale"], true);
+    drawRule();
+    for (const [category, { count, amount }] of rows) {
+        drawRow([category, String(count), formatAmount(amount)], false);
+    }
+    drawRule();
+    const totalAmount = rows.reduce((sum, [, entry]) => sum + entry.amount, 0);
+    drawRow(["Totale", String(projects.length), formatAmount(totalAmount)], true);
+};
+
 const addCompletoLayout = (pdf: PdfDocument, project: ProjectWithImage) => {
-    if (pdf.projectCounter === PROJECTS_PER_PAGE_COMPLETO) pdf.newPage();
     const projectBlockHeight = (pdf.pageHeight - pdf.margin * 2) / PROJECTS_PER_PAGE_COMPLETO;
+    pdf.checkNewPage(projectBlockHeight);
 
     const imageWidth = 70;
     const imageHeight = imageWidth / IMAGE_ASPECT;
@@ -195,13 +271,12 @@ const addCompletoLayout = (pdf: PdfDocument, project: ProjectWithImage) => {
         { text: `Stato: ${project.status}`, fontSize: 9, color: 120 },
     ], textX, pdf.y, textWidth, projectBlockHeight - 8);
 
-    pdf.projectCounter++;
     pdf.y += projectBlockHeight;
 };
 
 const addCompattoLayout = (pdf: PdfDocument, project: ProjectWithImage) => {
-    if (pdf.projectCounter === PROJECTS_PER_PAGE_COMPATTO) pdf.newPage();
     const projectBlockHeight = (pdf.pageHeight - pdf.margin * 2) / PROJECTS_PER_PAGE_COMPATTO;
+    pdf.checkNewPage(projectBlockHeight);
     const currentY = pdf.y;
 
     const imageWidth = 35;
@@ -222,7 +297,6 @@ const addCompattoLayout = (pdf: PdfDocument, project: ProjectWithImage) => {
         { text: `Stato: ${project.status}`, fontSize: 7.5, color: 100 },
     ], textX, currentY, textWidth, separatorY - currentY - 1.5);
 
-    pdf.projectCounter++;
     pdf.doc.setDrawColor(220, 220, 220);
     pdf.doc.setLineWidth(0.2);
     pdf.doc.line(pdf.margin, separatorY, pdf.pageWidth - pdf.margin, separatorY);
@@ -298,14 +372,28 @@ const addSoloTestoLayout = (pdf: PdfDocument, project: Project) => {
 };
 
 
-export async function generatePortfolioPDF(projects: Project[], layout: PdfLayout) {
+export interface PdfOptions {
+    title: string;
+    includeHeader: boolean;
+    includeSummary: boolean;
+    // Returns the project's image as a data URL (or null). Kept as a parameter so
+    // the generator doesn't depend on where images are stored.
+    loadImageData: (project: Project) => Promise<string | null>;
+}
+
+const fileNamePart = (text: string) =>
+    text.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w-]+/g, '-').replace(/^-+|-+$/g, '');
+
+export async function generatePortfolioPDF(projects: Project[], layout: PdfLayout, options: PdfOptions) {
     const pdfDoc = new PdfDocument();
+    const title = options.title.trim() || "Elenco lavori";
 
     const projectsWithImageData: ProjectWithImage[] = layout !== "Solo Testo"
         ? await Promise.all(
             projects.map(async (project) => {
                 try {
-                    const imageData = await loadCroppedImage(project.image);
+                    const source = await options.loadImageData(project);
+                    const imageData = source ? await loadCroppedImage(source) : null;
                     return { ...project, imageData };
                 } catch (error) {
                     console.error(`Failed to load image for project ${project.name}:`, error);
@@ -315,7 +403,9 @@ export async function generatePortfolioPDF(projects: Project[], layout: PdfLayou
           )
         : projects.map(p => ({...p, imageData: null}));
 
-    pdfDoc.startPage();
+    if (options.includeHeader) {
+        addHeader(pdfDoc, title, projects.length);
+    }
 
     for (const project of projectsWithImageData) {
         switch (layout) {
@@ -331,5 +421,10 @@ export async function generatePortfolioPDF(projects: Project[], layout: PdfLayou
         }
     }
 
-    pdfDoc.save(`Portfolio-GDAStudio-${layout}.pdf`);
+    if (options.includeSummary) {
+        addSummary(pdfDoc, projects);
+    }
+
+    pdfDoc.drawFooters(`GDAStudio — ${title}`);
+    pdfDoc.doc.save(`${fileNamePart(title) || 'Elenco-lavori'}-GDAStudio-${fileNamePart(layout)}-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
 }

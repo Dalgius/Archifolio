@@ -11,7 +11,7 @@ import Image from "next/image";
 import imageCompression from "browser-image-compression";
 
 import { cn } from "@/lib/utils";
-import type { Project } from "@/types";
+import type { Project, ProjectFields } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 
 import { Button } from "@/components/ui/button";
@@ -40,12 +40,10 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { ProjectImage } from "@/components/project-image";
 
 const projectSchema = z.object({
   name: z.string().min(1, "Il titolo è obbligatorio"),
-  image: z.string().min(1, "L'immagine è obbligatoria").refine(val => val.startsWith('data:image/') || val.startsWith('https://placehold.co'), {
-    message: "Carica un'immagine per il progetto."
-  }),
   location: z.string().min(1, "La località è obbligatoria"),
   startDate: z.date({ required_error: "La data di inizio è obbligatoria" }),
   endDate: z.date({ required_error: "La data di fine è obbligatoria" }),
@@ -79,8 +77,9 @@ const projectSchema = z.object({
 type ProjectFormValues = z.infer<typeof projectSchema>;
 
 interface ProjectFormProps {
-  onAddProject: (project: Omit<Project, 'id'>) => Promise<void>;
-  onUpdateProject: (project: Project) => Promise<void>;
+  // newImage is the compressed data URL of a newly uploaded image, or null to keep the current one.
+  onAddProject: (fields: ProjectFields, newImage: string | null) => Promise<void>;
+  onUpdateProject: (id: string, fields: ProjectFields, newImage: string | null) => Promise<void>;
   projectToEdit?: Project | null;
   typologySuggestions?: string[];
   onClose: () => void;
@@ -90,6 +89,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, typo
   const { toast } = useToast();
   const [isCompressing, setIsCompressing] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [newImage, setNewImage] = React.useState<string | null>(null);
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
@@ -105,7 +105,6 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, typo
       works: (projectToEdit.works || []).map((value) => ({ value })),
     } : {
       name: "",
-      image: "https://placehold.co/600x400.png",
       location: "",
       startDate: new Date(),
       endDate: new Date(),
@@ -162,7 +161,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, typo
           return;
         }
 
-        form.setValue("image", dataUrl, { shouldValidate: true });
+        setNewImage(dataUrl);
         toast({ title: "Immagine caricata e compressa!" });
         setIsCompressing(false);
       };
@@ -181,7 +180,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, typo
 
   const onSubmit = async (data: ProjectFormValues) => {
     setIsSubmitting(true);
-    const projectData: Omit<Project, 'id'> = {
+    const fields: ProjectFields = {
       ...data,
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       endDate: format(data.endDate, 'yyyy-MM-dd'),
@@ -190,10 +189,10 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, typo
 
     try {
       if (projectToEdit) {
-        await onUpdateProject({ ...projectData, id: projectToEdit.id });
+        await onUpdateProject(projectToEdit.id, fields, newImage);
         toast({ title: "Progetto aggiornato con successo!" });
       } else {
-        await onAddProject(projectData);
+        await onAddProject(fields, newImage);
         toast({ title: "Progetto aggiunto con successo!" });
       }
       onClose();
@@ -204,8 +203,6 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, typo
     }
   };
   
-  const imageValue = form.watch('image');
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-4 max-h-[80vh] overflow-y-auto px-4">
@@ -258,16 +255,20 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, typo
             <div className="md:col-span-1 space-y-2">
                  <FormLabel>Immagine Progetto</FormLabel>
                  <div className="relative w-full aspect-[4/3] rounded-md overflow-hidden border bg-muted">
-                      {imageValue && (
-                        <Image 
-                          src={imageValue} 
-                          alt="Anteprima progetto" 
-                          fill={true}
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          style={{ objectFit: 'cover' }}
-                          data-ai-hint="architecture design"
-                          priority
-                          />
+                      {newImage ? (
+                        <Image
+                          src={newImage}
+                          alt="Anteprima progetto"
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <ProjectImage
+                          project={projectToEdit ?? { id: "", name: "", imageVersion: null, isPublic: true }}
+                          sizes="(max-width: 768px) 100vw, 33vw"
+                          fromFirestore
+                        />
                       )}
                       <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                          <Button type="button" variant="secondary" asChild>
@@ -279,15 +280,7 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, typo
                          </Button>
                       </div>
                  </div>
-                 <FormField
-                  control={form.control}
-                  name="image"
-                  render={() => (
-                    <FormItem>
-                      <FormMessage className="mt-2" />
-                    </FormItem>
-                  )}
-                />
+                 <FormDescription>Facoltativa: senza immagine viene mostrato il logo.</FormDescription>
             </div>
         </div>
 
