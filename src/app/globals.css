@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 @layer base {
   :root {
     --background: 0 0% 96.1%;
@@ -84,5 +80,35 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Public site: monochrome, square corners, pure white background. The admin keeps the default tokens. */
+@layer base {
+  .theme-public {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 7%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 7%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 7%;
+    --primary: 216 7% 23%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 7%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 42%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 7%;
+    --border: 0 0% 89%;
+    --input: 0 0% 89%;
+    --ring: 216 7% 23%;
+    --radius: 0rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up {
+    animation: none;
   }
 }
