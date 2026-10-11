@@ -4,7 +4,8 @@ export type ProjectStatus = "Completato" | "In Corso" | "Concettuale" | "Da fare
 export interface Project {
   id: string;
   name: string; // Titolo
-  image: string; // Immagine
+  // Versione dell'immagine salvata in projectImages/{id} (timestamp); null = nessuna immagine
+  imageVersion: number | null;
   location: string; // Località
   startDate: string; // Data Inizio, "YYYY-MM-DD"
   endDate: string; // Data Fine, "YYYY-MM-DD"
@@ -20,3 +21,6 @@ export interface Project {
   description: string; // Note / Descrizione
   isPublic: boolean;
 }
+
+// Project fields edited in the form (the image is saved separately).
+export type ProjectFields = Omit<Project, 'id' | 'imageVersion'>;

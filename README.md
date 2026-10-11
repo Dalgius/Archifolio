@@ -33,6 +33,21 @@ Configurazione (una tantum):
    Firestore Database → Regole.
 5. (Consigliato) Authentication → Settings → User actions: disattiva la registrazione di nuovi utenti.
 
+## Immagini
+
+Le immagini non stanno nei documenti `projects` ma nella collezione `projectImages` (stesso id del
+progetto), così l'elenco dei progetti resta leggero. Il sito pubblico le serve da
+`/images/<id>/<versione>` con cache permanente (la versione cambia a ogni nuovo caricamento).
+I documenti nel vecchio formato (campo `image`) vengono convertiti automaticamente al primo accesso in `/admin`.
+
+## Sito pubblico e Google
+
+Home e pagine dei progetti sono generate sul server (titolo, descrizione e anteprima per i social)
+e rigenerate al massimo ogni 60 secondi: le modifiche fatte in admin compaiono entro un minuto.
+`/sitemap.xml` e `/robots.txt` sono generati automaticamente. Per usare un dominio personalizzato
+negli URL della sitemap e delle anteprime imposta `NEXT_PUBLIC_SITE_URL` (es. `https://www.gdastudio.it`);
+altrimenti viene usato l'indirizzo Netlify.
+
 ## Dati di esempio
 
 Se la collezione `projects` è vuota, in `/admin` compare il pulsante "Carica progetti di esempio"
@@ -43,6 +58,9 @@ Se la collezione `projects` è vuota, in `/admin` compare il pulsante "Carica pr
 Con `NEXT_PUBLIC_BUILD_MODE=public` il pulsante "Accesso Admin" viene nascosto dall'header.
 
 ## Sviluppo
+
+Con gli emulatori Firebase (`firebase emulators:start --only firestore,auth`) imposta
+`NEXT_PUBLIC_FIREBASE_EMULATORS=true` e `NEXT_PUBLIC_FIREBASE_PROJECT_ID=demo-gdastudio`.
 
 ```
 npm install
