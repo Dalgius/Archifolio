@@ -41,17 +41,20 @@ export function ContactSection() {
             </div>
           )}
           {STUDIO.links.length > 0 && (
-            <div className="sm:text-right xl:col-start-3">
-              <p className={label}>Link</p>
-              <ul className={value}>
-                {STUDIO.links.map((link) => (
-                  <li key={link.url}>
-                    <a href={link.url} target="_blank" rel="noopener noreferrer" className="underline-offset-4 hover:underline">
-                      {link.label} ↗
-                    </a>
-                  </li>
-                ))}
-              </ul>
+            // The block sits against the right edge, its text stays left-aligned.
+            <div className="sm:flex sm:justify-end xl:col-start-3">
+              <div>
+                <p className={label}>Link</p>
+                <ul className={value}>
+                  {STUDIO.links.map((link) => (
+                    <li key={link.url}>
+                      <a href={link.url} target="_blank" rel="noopener noreferrer" className="underline-offset-4 hover:underline">
+                        {link.label} ↗
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           )}
         </div>
