@@ -116,75 +116,59 @@ export function ProjectIndex({ projects }: { projects: Project[] }) {
 }
 
 function IndexList({ entries }: { entries: Entry[] }) {
-  // Project shown in the side panel: the one under the mouse (or focused), else the first.
-  const [activeId, setActiveId] = React.useState<string | null>(null);
-  const active = entries.find(({ project }) => project.id === activeId) ?? entries[0];
-
-  const columns = 'lg:grid-cols-[3.5rem_minmax(0,1fr)_7rem] lg:gap-6';
+  // N. · thumbnail slot · project · place · years · category
+  const columns = 'md:grid-cols-[3rem_4.5rem_minmax(0,1fr)_12rem_7rem_4rem] md:gap-6';
 
   return (
-    <div className="lg:grid lg:grid-cols-12 lg:gap-10">
-      <div className="lg:col-span-8">
-        <div className={cn('hidden border-b py-3 lg:grid', columns, label)}>
-          <span>N.</span>
-          <span>Progetto</span>
-          <span className="text-right">Anno</span>
-        </div>
-        <ul className="group/list">
-          {entries.map(({ project, number }, index) => (
-            <li key={project.id} className="animate-fade-up border-b" style={delay(index)}>
-              <Link
-                href={`/projects/${project.id}`}
-                onMouseEnter={() => setActiveId(project.id)}
-                onFocus={() => setActiveId(project.id)}
+    <div>
+      <div className={cn('hidden border-b py-3 md:grid', columns, label)}>
+        <span>N.</span>
+        <span aria-hidden />
+        <span>Progetto</span>
+        <span>Luogo</span>
+        <span>Anno</span>
+        <span className="text-right">Cat.</span>
+      </div>
+      <ul className="group/list">
+        {entries.map(({ project, number }, index) => (
+          <li key={project.id} className="animate-fade-up border-b" style={delay(index)}>
+            <Link
+              href={`/projects/${project.id}`}
+              className={cn(
+                'group grid grid-cols-[5rem_minmax(0,1fr)] items-center gap-x-4 py-4 md:py-5',
+                'transition-opacity duration-300 md:group-hover/list:opacity-30 md:hover:!opacity-100',
+                columns
+              )}
+            >
+              <span className="hidden font-display text-sm tabular-nums text-muted-foreground md:block">{number}</span>
+              {/* Thumbnail: always visible on touch screens; with a mouse its space is reserved
+                  and the image fades in on hover/focus, so the text never moves. */}
+              <div
                 className={cn(
-                  'group grid grid-cols-[5rem_minmax(0,1fr)] items-center gap-x-4 py-4 lg:py-5',
-                  'transition-opacity duration-300 lg:group-hover/list:opacity-30 lg:hover:!opacity-100',
-                  columns
+                  'relative aspect-[4/3] w-20 overflow-hidden bg-muted md:w-[4.5rem]',
+                  'transition-[opacity,transform] duration-300',
+                  '[@media(hover:hover)]:md:scale-95 [@media(hover:hover)]:md:opacity-0',
+                  '[@media(hover:hover)]:md:group-hover:scale-100 [@media(hover:hover)]:md:group-hover:opacity-100',
+                  '[@media(hover:hover)]:md:group-focus-visible:scale-100 [@media(hover:hover)]:md:group-focus-visible:opacity-100'
                 )}
               >
-                {/* Below lg there is no side panel: each row carries its thumbnail. */}
-                <div className="relative aspect-[4/3] w-20 overflow-hidden bg-muted lg:hidden">
-                  <ProjectImage project={project} sizes="80px" />
-                </div>
-                <span className="hidden font-display text-sm tabular-nums text-muted-foreground lg:block">{number}</span>
-                <div className="min-w-0">
-                  <span className="block font-display text-base font-medium leading-snug transition-transform duration-300 lg:text-xl lg:group-hover:translate-x-2">
-                    {project.name}
-                  </span>
-                  <span className="mt-1 block text-xs text-muted-foreground lg:text-sm">
-                    <span className="lg:hidden">{number} · </span>
-                    {project.location}
-                    <span className="lg:hidden"> · {formatYears(project)}</span>
-                    {project.category && <span className="hidden lg:inline"> · {project.category}</span>}
-                  </span>
-                </div>
-                <span className="hidden text-right text-sm tabular-nums text-muted-foreground lg:block">{formatYears(project)}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Side panel (lg+): stays in view while scrolling and never covers the list. */}
-      {active && (
-        <aside aria-hidden className="hidden lg:col-span-4 lg:block">
-          <div className="sticky top-24 pt-12">
-            <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-              <div key={active.project.id} className="absolute inset-0 duration-500 animate-in fade-in">
-                <ProjectImage project={active.project} sizes="(max-width: 1536px) 33vw, 480px" />
+                <ProjectImage project={project} sizes="80px" />
               </div>
-            </div>
-            <div className="mt-4 flex gap-4">
-              <span className="font-display text-sm tabular-nums text-muted-foreground">{active.number}</span>
               <div className="min-w-0">
-                <p className="font-display text-sm font-medium leading-snug">{active.project.name}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{active.project.location} · {formatYears(active.project)}</p>
+                <span className="block font-display text-base font-medium leading-snug md:text-xl">
+                  {project.name}
+                </span>
+                <span className="mt-1 block text-xs text-muted-foreground md:hidden">
+                  {number} · {project.location} · {formatYears(project)}
+                </span>
               </div>
-            </div>
-          </div>
-        </aside>
-      )}
+              <span className="hidden truncate text-sm text-muted-foreground md:block">{project.location}</span>
+              <span className="hidden text-sm tabular-nums text-muted-foreground md:block">{formatYears(project)}</span>
+              <span className="hidden text-right text-sm tabular-nums text-muted-foreground md:block">{project.category}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
