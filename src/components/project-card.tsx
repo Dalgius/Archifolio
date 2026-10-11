@@ -25,30 +25,9 @@ interface ProjectCardProps {
   onDelete?: (project: Project) => void;
   onToggleVisibility?: (project: Project) => void;
   priority?: boolean;
-  variant?: 'default' | 'compact';
 }
 
-export function ProjectCard({ project, onEdit, onDelete, onToggleVisibility, priority = false, variant = 'default' }: ProjectCardProps) {
-
-  if (variant === 'compact') {
-    return (
-      <Card className="overflow-hidden transition-all duration-300 ease-in-out h-full flex flex-col group border-0 rounded-none relative">
-        <div className="relative w-full aspect-square">
-          <ProjectImage
-              project={project}
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-              className="transition-transform duration-300 ease-in-out group-hover:scale-105"
-              priority={priority}
-          />
-        </div>
-        <CardContent className="p-4 flex flex-col justify-end h-full absolute bottom-0 w-full text-white bg-gradient-to-t from-black/60 to-transparent">
-          <h3 className="text-lg font-bold uppercase leading-tight">{project.name}</h3>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // 'default' variant for admin page
+export function ProjectCard({ project, onEdit, onDelete, onToggleVisibility, priority = false }: ProjectCardProps) {
   const startDateFormatted = format(parseISO(project.startDate), 'dd/MM/yyyy');
   const amountFormatted = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(project.amount);
 

@@ -301,7 +301,7 @@ function ProjectGrid({ projects, onEdit, onDelete, onToggleVisibility, emptyMess
   return (
     <div className="grid grid-cols-2 gap-4 mt-6 md:grid-cols-4 lg:grid-cols-6">
       {projects.map((project) => (
-        <ProjectCard key={project.id} project={project} onEdit={onEdit} onDelete={onDelete} onToggleVisibility={onToggleVisibility} variant="default" />
+        <ProjectCard key={project.id} project={project} onEdit={onEdit} onDelete={onDelete} onToggleVisibility={onToggleVisibility} />
       ))}
     </div>
   );

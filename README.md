@@ -48,6 +48,11 @@ e rigenerate al massimo ogni 60 secondi: le modifiche fatte in admin compaiono e
 negli URL della sitemap e delle anteprime imposta `NEXT_PUBLIC_SITE_URL` (es. `https://www.gdastudio.it`);
 altrimenti viene usato l'indirizzo Netlify.
 
+## Contatti dello studio
+
+Email, telefono, indirizzo e link mostrati nella sezione "Contatti" e nel footer del sito pubblico
+si modificano in `src/lib/site.ts` (oggetto `STUDIO`). Un campo vuoto (`''`) viene nascosto.
+
 ## Dati di esempio
 
 Se la collezione `projects` è vuota, in `/admin` compare il pulsante "Carica progetti di esempio"

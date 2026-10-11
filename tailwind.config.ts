@@ -10,8 +10,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
+        body: ['var(--font-inter)', 'Inter', 'sans-serif'],
+        headline: ['var(--font-inter)', 'Inter', 'sans-serif'],
+        display: ['var(--font-inter-tight)', 'var(--font-inter)', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
@@ -72,6 +73,10 @@ export default {
         sm: 'calc(var(--radius) - 4px)',
       },
       keyframes: {
+        'fade-up': {
+          from: { opacity: '0', transform: 'translateY(12px)' },
+          to: { opacity: '1', transform: 'none' },
+        },
         'accordion-down': {
           from: {
             height: '0',
@@ -90,6 +95,7 @@ export default {
         },
       },
       animation: {
+        'fade-up': 'fade-up 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both',
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
       },

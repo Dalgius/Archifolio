@@ -1,13 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
-import { format, isValid, parseISO } from 'date-fns';
-import { it } from 'date-fns/locale';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import PublicLayout from '@/components/public-layout';
+import { CONTAINER } from '@/components/container';
 import { ProjectImage } from '@/components/project-image';
-import { getPublicProject } from '@/lib/public-data';
+import { getPublicProject, getPublicProjects } from '@/lib/public-data';
+import { formatAmount, formatPeriod, projectNumber } from '@/lib/project-format';
+import { cn } from '@/lib/utils';
 import { projectImageUrl } from '@/lib/project-images';
 import { SITE_NAME } from '@/lib/site';
 import type { Project } from '@/types';
@@ -23,24 +22,6 @@ interface ProjectPageProps {
 export async function generateStaticParams() {
   return [];
 }
-
-const formatDate = (date: string) => {
-  const parsed = parseISO(date);
-  return isValid(parsed) ? format(parsed, 'd MMMM yyyy', { locale: it }) : '';
-};
-
-// "Concettuale" and "Da fare" projects have no real end date yet.
-const formatPeriod = (project: Project) => {
-  const start = formatDate(project.startDate);
-  switch (project.status) {
-    case 'In Corso':
-      return `${start} - in corso`;
-    case 'Completato':
-      return `${start} - ${formatDate(project.endDate)}`;
-    default:
-      return start;
-  }
-};
 
 const describe = (project: Project) =>
   project.description ||
@@ -73,6 +54,8 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
   };
 }
 
+const label = 'text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground';
+
 export default async function ProjectPage({ params }: ProjectPageProps) {
   const { id } = await params;
   const project = await getPublicProject(id);
@@ -81,64 +64,90 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     notFound();
   }
 
+  // Number and previous/next follow the order of the public index.
+  const projects = await getPublicProjects();
+  const index = projects.findIndex((p) => p.id === project.id);
+  const previous = index > 0 ? projects[index - 1] : null;
+  const next = index >= 0 && index < projects.length - 1 ? projects[index + 1] : null;
+
   const details = [
     { label: 'Committente', value: project.client },
-    { label: 'Importo Lavori', value: new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(project.amount) },
-    { label: 'Categoria Opere', value: project.category },
+    { label: 'Luogo', value: project.location },
+    { label: 'Periodo', value: formatPeriod(project) },
+    { label: 'Stato', value: project.status },
     { label: 'Prestazione', value: project.service },
+    { label: 'Categoria opere', value: project.category },
     { label: 'Tipologia', value: project.typology },
     { label: 'Intervento', value: project.intervention },
     { label: 'Classificazione', value: project.classification },
+    { label: 'Importo lavori', value: project.amount ? formatAmount(project.amount) : '' },
   ].filter((detail) => detail.value);
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="mb-8">
-        <Button variant="outline" asChild>
-          <Link href="/" className="inline-flex items-center gap-2">
-            <ArrowLeft />
-            <span>Torna al Portfolio</span>
-          </Link>
-        </Button>
-      </div>
-      <article className="max-w-4xl mx-auto">
-        <div className="relative w-full aspect-[3/2] rounded-lg overflow-hidden mb-8 shadow-lg">
-          <ProjectImage project={project} sizes="(max-width: 896px) 100vw, 896px" priority />
+    <PublicLayout>
+      <article className={cn(CONTAINER, 'pb-20 pt-10 md:pt-14')}>
+        <div className={cn(label, 'flex items-center justify-between')}>
+          <Link href="/#progetti" className="transition-colors hover:text-foreground">← Indice</Link>
+          {index >= 0 && <span className="tabular-nums">N. {projectNumber(index)}</span>}
         </div>
-        <div className="flex flex-wrap gap-4 items-center mb-4 text-muted-foreground">
-            <Badge variant="secondary" className="text-base">{project.status}</Badge>
-            <span>&bull;</span>
-            <span>{project.location}</span>
-            <span>&bull;</span>
-            <span>Periodo: {formatPeriod(project)}</span>
-        </div>
-        <h1 className="text-3xl md:text-5xl font-bold font-headline mb-6">{project.name}</h1>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mb-8 text-sm border-t border-b py-8">
-          {details.map((detail) => (
-            <div key={detail.label} className="flex flex-col">
-              <span className="font-semibold text-muted-foreground uppercase tracking-wider">{detail.label}</span>
-              <span className="text-foreground">{detail.value}</span>
-            </div>
-          ))}
+
+        <h1 className="mt-10 max-w-5xl animate-fade-up font-display text-4xl font-medium leading-[1.05] tracking-[-0.01em] md:text-6xl">
+          {project.name}
+        </h1>
+        <p className="mt-4 text-muted-foreground">{project.location} · {formatPeriod(project)}</p>
+
+        <div className="mt-12 grid gap-10 lg:grid-cols-12">
+          <div className="relative aspect-[3/2] overflow-hidden bg-muted lg:order-2 lg:col-span-8">
+            <ProjectImage project={project} sizes="(max-width: 1024px) 100vw, 66vw" priority />
+          </div>
+          <dl className="border-t lg:order-1 lg:col-span-4">
+            {details.map((detail) => (
+              <div key={detail.label} className="grid grid-cols-[8.5rem_minmax(0,1fr)] gap-4 border-b py-3 text-sm">
+                <dt className={cn(label, 'pt-0.5')}>{detail.label}</dt>
+                <dd>{detail.value}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
 
         {project.works && project.works.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold font-headline mb-4">Lavori Principali</h2>
-            <ul className="list-disc list-inside space-y-2 text-foreground/80">
-              {project.works.map((work, index) => <li key={index}>{work}</li>)}
-            </ul>
-          </div>
+          <section className="mt-20 grid gap-6 lg:grid-cols-12">
+            <h2 className={cn(label, 'lg:col-span-4')}>Lavori principali</h2>
+            <ol className="border-t lg:col-span-8">
+              {project.works.map((work, workIndex) => (
+                <li key={workIndex} className="flex gap-6 border-b py-3">
+                  <span className="font-display text-sm tabular-nums text-muted-foreground">{projectNumber(workIndex)}</span>
+                  <span>{work}</span>
+                </li>
+              ))}
+            </ol>
+          </section>
         )}
 
         {project.description && (
-          <div className="prose prose-lg max-w-none text-foreground/80">
-             <h2 className="text-2xl font-bold font-headline mb-4">Note / Descrizione</h2>
-            <p>{project.description}</p>
-          </div>
+          <section className="mt-20 grid gap-6 lg:grid-cols-12">
+            <h2 className={cn(label, 'lg:col-span-4')}>Descrizione</h2>
+            <p className="whitespace-pre-line text-lg leading-relaxed lg:col-span-8">{project.description}</p>
+          </section>
+        )}
+
+        {(previous || next) && (
+          <nav aria-label="Altri progetti" className="mt-24 grid border-t md:grid-cols-2">
+            {previous ? (
+              <Link href={`/projects/${previous.id}`} className="group block border-b py-6 md:border-b-0 md:border-r md:pr-6">
+                <span className={label}>← Precedente</span>
+                <span className="mt-2 block font-display text-lg font-medium leading-snug transition-transform duration-300 group-hover:-translate-x-1">{previous.name}</span>
+              </Link>
+            ) : <span />}
+            {next && (
+              <Link href={`/projects/${next.id}`} className="group block py-6 text-right md:pl-6">
+                <span className={label}>Successivo →</span>
+                <span className="mt-2 block font-display text-lg font-medium leading-snug transition-transform duration-300 group-hover:translate-x-1">{next.name}</span>
+              </Link>
+            )}
+          </nav>
         )}
       </article>
-    </div>
+    </PublicLayout>
   );
 }
