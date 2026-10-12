@@ -8,7 +8,7 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { CalendarIcon, Upload, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { compressImageToDataUrl, ImageTooLargeError } from "@/lib/image-compression";
+import imageCompression from "browser-image-compression";
 
 import { cn } from "@/lib/utils";
 import type { Project, ProjectFields } from "@/types";
@@ -136,25 +136,43 @@ export function ProjectForm({ onAddProject, onUpdateProject, projectToEdit, typo
     setIsCompressing(true);
     toast({ title: "Compressione immagine...", description: "Attendere prego, potrebbe richiedere un momento." });
 
+    const options = {
+      maxSizeMB: 0.7, // Ridotto per sicurezza con la codifica Base64
+      maxWidthOrHeight: 1920,
+      useWebWorker: true,
+    };
+    
+    const FIRESTORE_BYTE_LIMIT = 1048487;
+
     try {
-      setNewImage(await compressImageToDataUrl(file));
-      toast({ title: "Immagine caricata e compressa!" });
+      const compressedFile = await imageCompression(file, options);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
+
+        if (dataUrl.length > FIRESTORE_BYTE_LIMIT) {
+          toast({
+            variant: "destructive",
+            title: "Immagine troppo grande",
+            description: "L'immagine supera il limite di 1MB anche dopo la compressione. Prova con un file di dimensioni inferiori.",
+          });
+          setIsCompressing(false);
+          return;
+        }
+
+        setNewImage(dataUrl);
+        toast({ title: "Immagine caricata e compressa!" });
+        setIsCompressing(false);
+      };
+      reader.readAsDataURL(compressedFile);
     } catch (error) {
-      if (error instanceof ImageTooLargeError) {
-        toast({
-          variant: "destructive",
-          title: "Immagine troppo grande",
-          description: "L'immagine supera il limite di 1MB anche dopo la compressione. Prova con un file di dimensioni inferiori.",
-        });
-      } else {
-        console.error("Error compressing image:", error);
-        toast({
-          variant: "destructive",
-          title: "Errore di compressione",
-          description: "Impossibile comprimere l'immagine. Prova con un file diverso.",
-        });
-      }
-    } finally {
+      console.error("Error compressing image:", error);
+      toast({
+        variant: "destructive",
+        title: "Errore di compressione",
+        description: "Impossibile comprimere l'immagine. Prova con un file diverso.",
+      });
       setIsCompressing(false);
     }
   };

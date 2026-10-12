@@ -7,7 +7,6 @@ import {
   Download,
   FileText,
   Search,
-  Upload,
 } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -33,7 +32,6 @@ import { useToast } from "@/hooks/use-toast";
 import { ProjectCard } from "@/components/project-card";
 import { ProjectForm } from "@/components/project-form";
 import { PdfExportDialog } from "@/components/pdf-export-dialog";
-import { ProjectImportDialog } from "@/components/project-import-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { seedProjects } from "@/lib/seed";
 import {
@@ -47,7 +45,6 @@ export default function AdminPage() {
   const { toast } = useToast();
   const [projectFormOpen, setProjectFormOpen] = React.useState(false);
   const [pdfExportOpen, setPdfExportOpen] = React.useState(false);
-  const [importOpen, setImportOpen] = React.useState(false);
   const [editingProject, setEditingProject] = React.useState<Project | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
   const [projectToDelete, setProjectToDelete] = React.useState<Project | null>(null);
@@ -175,24 +172,6 @@ export default function AdminPage() {
               <TooltipContent>Esporta in PDF</TooltipContent>
             </Tooltip>
             <PdfExportDialog projects={projects} />
-          </Dialog>
-
-          <Dialog open={importOpen} onOpenChange={setImportOpen}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <Upload className="w-4 h-4" />
-                    <span className="sr-only">Importa progetti</span>
-                  </Button>
-                </DialogTrigger>
-              </TooltipTrigger>
-              <TooltipContent>Importa progetti</TooltipContent>
-            </Tooltip>
-            {/* Mounted only while open, so each import starts from a clean state. */}
-            {importOpen && (
-              <ProjectImportDialog projects={projects} addProject={addProject} updateProject={updateProject} />
-            )}
           </Dialog>
 
           <Dialog open={projectFormOpen} onOpenChange={(isOpen) => {
