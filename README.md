@@ -53,43 +53,6 @@ altrimenti viene usato l'indirizzo Netlify.
 Email, telefono, indirizzo e link mostrati nella sezione "Contatti" e nel footer del sito pubblico
 si modificano in `src/lib/site.ts` (oggetto `STUDIO`). Un campo vuoto (`''`) viene nascosto.
 
-## Importazione progetti
-
-In `/admin` il pulsante **Importa progetti** (icona freccia in su) legge un file JSON e mostra
-un'anteprima prima di salvare. I progetti vengono abbinati per titolo (senza distinguere maiuscole,
-accenti e punteggiatura): quelli esistenti vengono aggiornati solo nei campi presenti nel file e
-mantengono la loro visibilità; i nuovi vengono aggiunti come **privati** (salvo `"isPublic": true`).
-Nessun progetto viene eliminato.
-
-```json
-{
-  "version": 1,
-  "projects": [
-    {
-      "name": "Titolo del progetto",
-      "location": "Isernia",
-      "startDate": "2021-05-01",
-      "endDate": "2022-09-01",
-      "client": "Comune di ...",
-      "service": "Progetto Esecutivo e D.L.",
-      "amount": 600000,
-      "category": "E.21",
-      "status": "Completato",
-      "typology": "Museo",
-      "intervention": "Ristrutturazione",
-      "classification": "Enti pubblici",
-      "description": "...",
-      "works": ["...", "..."],
-      "isPublic": false,
-      "image": "data:image/jpeg;base64,..."
-    }
-  ]
-}
-```
-
-Solo `name` è obbligatorio (per i progetti nuovi serve anche `startDate`). `status` è uno tra
-`Completato`, `In Corso`, `Concettuale`, `Da fare`. Le immagini vengono ricompresse come nel modulo.
-
 ## Dati di esempio
 
 Se la collezione `projects` è vuota, in `/admin` compare il pulsante "Carica progetti di esempio"

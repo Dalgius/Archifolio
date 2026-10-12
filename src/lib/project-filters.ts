@@ -12,7 +12,7 @@ export const PROJECT_SORT_LABELS: Record<ProjectSort, string> = {
   'category-asc': 'Categoria opere',
 };
 
-export const normalize = (text: string) => text.toLocaleLowerCase('it').normalize('NFD').replace(/[̀-ͯ]/g, '');
+const normalize = (text: string) => text.toLocaleLowerCase('it').normalize('NFD').replace(/[̀-ͯ]/g, '');
 
 // Case- and accent-insensitive search over the main text fields.
 export function matchesSearch(project: Project, query: string) {
